@@ -104,7 +104,16 @@ export default function Home() {
         time: "Just now"
       }, ...history]);
       setBidAmount("");
-      setTxStatus("Transaction Confirmed (Hash: 0x...a1b2)");
+
+      // Anti-Sniping Logic Simulation
+      const EXTENSION_THRESHOLD = 60; // 1 minute
+      if (timeLeft < EXTENSION_THRESHOLD) {
+        setTimeLeft(prev => prev + 60);
+        setTxStatus("Anti-Sniping Triggered: Auction Extended by 60s!");
+      } else {
+        setTxStatus("Transaction Confirmed (Hash: 0x...a1b2)");
+      }
+
       setTimeout(() => setTxStatus(null), 5000);
     } catch (err: any) {
       setError(`Transaction Failed: ${err.message}`);

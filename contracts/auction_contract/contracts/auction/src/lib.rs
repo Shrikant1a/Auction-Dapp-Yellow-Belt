@@ -16,6 +16,8 @@ pub struct AuctionData {
     pub min_increment: i128,
     pub owner: Address,
     pub finalized: bool,
+    pub extension_window: u64,
+    pub extension_duration: u64,
 }
 
 #[contract]
@@ -29,6 +31,8 @@ impl AuctionContract {
         min_increment: i128,
         starting_price: i128,
         duration_secs: u64,
+        extension_window: u64,
+        extension_duration: u64,
     ) {
         if env.storage().instance().has(&DataKey::AuctionData) {
             panic!("Auction already initialized");
@@ -36,11 +40,13 @@ impl AuctionContract {
 
         let auction_data = AuctionData {
             highest_bid: starting_price,
-            highest_bidder: owner.clone(), // Initial bidder is owner with starting price
+            highest_bidder: owner.clone(),
             end_time: env.ledger().timestamp() + duration_secs,
             min_increment,
             owner: owner.clone(),
             finalized: false,
+            extension_window,
+            extension_duration,
         };
 
         env.storage().instance().set(&DataKey::AuctionData, &auction_data);
@@ -67,9 +73,17 @@ impl AuctionContract {
             panic!("Bid amount too low");
         }
 
-        // Refund the previous highest bidder (simple case: transfer from bidder to owner/escrow)
-        // In a real scenario, we'd use the Token SDK to handle transfers.
-        // For this demo, let's focus on the state management.
+        // Anti-Sniping Logic
+        let current_time = env.ledger().timestamp();
+        if auction_data.end_time - current_time < auction_data.extension_window {
+            auction_data.end_time = current_time + auction_data.extension_duration;
+            
+            // Emit extension event
+            env.events().publish(
+                (symbol_short!("extend"), auction_data.end_time),
+                current_time,
+            );
+        }
 
         auction_data.highest_bid = amount;
         auction_data.highest_bidder = bidder.clone();

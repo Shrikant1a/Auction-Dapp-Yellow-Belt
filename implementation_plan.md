@@ -19,12 +19,14 @@ This document outlines the step-by-step plan for building the Real-time Auction 
 - [x] **Components**: Created main page with high-end UI (Hero, Form, Feed).
 - [x] **Error Handling**: Handled 3 types of errors (Connection, Invalid Bid, Expired).
 - [x] **Transaction Status**: Visual feedback for multi-step transaction process.
+- [x] **Anti-Sniping**: Auto-extend auction logic (Realism/Fairness).
 - [ ] **State Management**: Connect real Stellar state to the UI.
 
 ## 4. Compliance & Requirements
 - [x] 3 error types handled.
 - [x] Minimum 2+ meaningful commits.
 - [x] Transaction status visible.
+- [x] Anti-Sniping feature implemented.
 - [ ] Contract deployed on testnet.
 - [ ] Contract called from the frontend.
 
