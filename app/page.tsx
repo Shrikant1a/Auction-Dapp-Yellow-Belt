@@ -226,6 +226,7 @@ export default function Home() {
                   <div className="flex items-center space-x-2 text-white/40 text-sm font-medium">
                     <ShieldCheck size={14} className="text-gold" />
                     <span>On-chain Authenticated via Soroban</span>
+                    <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded border border-white/5 font-mono ml-2">ID: CDGC...I6NO</span>
                     <ChevronRight size={14} />
                   </div>
                 </div>
