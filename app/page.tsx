@@ -19,7 +19,8 @@ import {
   ChevronRight,
   TrendingDown,
   BarChart3,
-  ChevronDown
+  ChevronDown,
+  X
 } from "lucide-react";
 import {
   AreaChart,
@@ -44,6 +45,7 @@ export default function Home() {
   const [txStatus, setTxStatus] = useState<string | null>(null);
   const [isOutbid, setIsOutbid] = useState(false);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+  const [showWalletOptions, setShowWalletOptions] = useState(false);
   const [history, setHistory] = useState([
     { id: 1, bidder: "GDRA...4K2V", amount: 1200, time: "2m ago", timestamp: Date.now() - 120000, rank: 1 },
     { id: 2, bidder: "GBV3...R8O9", amount: 1150, time: "15m ago", timestamp: Date.now() - 900000, rank: 2 },
@@ -91,14 +93,23 @@ export default function Home() {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const handleConnect = async () => {
+  const handleConnect = () => {
+    setShowWalletOptions(true);
+  };
+
+  const handleWalletSelect = async (walletName: string) => {
+    setShowWalletOptions(false);
     setIsLoading(true);
     setError(null);
     try {
+      // Simulation of connection delay
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
       // Simulation of connection error (Requirement: 1st Error Type handled)
-      if (Math.random() < 0.2) throw new Error("Wallet connection rejected by user.");
+      if (Math.random() < 0.1) throw new Error(`${walletName} connection rejected by user.`);
+
       setAddress("GDSB...7K3W");
-      setTxStatus("Wallet Connected Successfully");
+      setTxStatus(`${walletName} Connected Successfully`);
       setTimeout(() => setTxStatus(null), 3000);
     } catch (err: any) {
       setError(`Connection Error: ${err.message}`);
@@ -292,7 +303,80 @@ export default function Home() {
                 <span className="bg-white/10 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/10">1 of 1</span>
               </div>
 
-              <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+              {/* Wallet Selection Modal */}
+              <AnimatePresence>
+                {showWalletOptions && (
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setShowWalletOptions(false)}
+                      className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                      className="relative glass w-full max-w-md overflow-hidden rounded-[2.5rem] border-gold/20 shadow-[0_0_100px_rgba(251,191,36,0.1)]"
+                    >
+                      <div className="p-8 space-y-8">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-2xl font-black tracking-tight flex items-center space-x-3">
+                              <Wallet className="text-gold" size={24} />
+                              <span>SELECT WALLET</span>
+                            </h3>
+                            <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">Stellar Network Portal</p>
+                          </div>
+                          <button
+                            onClick={() => setShowWalletOptions(false)}
+                            className="p-2 hover:bg-white/5 rounded-full transition-colors"
+                          >
+                            <X size={20} className="text-white/20" />
+                          </button>
+                        </div>
+
+                        <div className="grid gap-4">
+                          {[
+                            { name: 'Freighter', description: 'Web Browser Extension', popular: true },
+                            { name: 'Albedo', description: 'Secure Website Access', popular: false },
+                            { name: 'xBull', description: 'Multi-platform Wallet', popular: false },
+                            { name: 'Hana', description: 'Cross-chain Crypto Wallet', popular: true }
+                          ].map((wallet) => (
+                            <button
+                              key={wallet.name}
+                              onClick={() => handleWalletSelect(wallet.name)}
+                              className="group flex items-center justify-between p-6 rounded-3xl bg-white/5 border border-white/5 hover:bg-gold/10 hover:border-gold/30 transition-all text-left relative overflow-hidden"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <div className="w-12 h-12 rounded-2xl bg-black/40 flex items-center justify-center transition-colors group-hover:bg-gold/20">
+                                  <ArrowUpRight className="text-white/20 group-hover:text-gold transition-colors" size={20} />
+                                </div>
+                                <div>
+                                  <p className="font-black text-lg tracking-tight group-hover:text-gold transition-colors">{wallet.name}</p>
+                                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{wallet.description}</p>
+                                </div>
+                              </div>
+                              {wallet.popular && (
+                                <div className="bg-white/5 px-2 py-1 rounded-lg border border-white/5 text-[8px] font-black tracking-widest text-white/20 uppercase">
+                                  RECOMMENDED
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+
+                        <p className="text-center text-[10px] font-bold text-white/20 uppercase tracking-widest">
+                          By connecting, you agree to the Aura Protocol Terms
+                        </p>
+                      </div>
+                    </motion.div>
+                  </div>
+                )}
+              </AnimatePresence>
+
+              <div className="absolute top-0 left-0 w-full p-8 flex justify-between items-center pointer-events-none z-50">
                 <div className="space-y-2">
                   <h2 className="text-5xl font-black tracking-tight leading-none uppercase">The Prime<br /><span className="text-gold">Singularity</span></h2>
                   <div className="flex items-center space-x-2 text-white/40 text-sm font-medium">
