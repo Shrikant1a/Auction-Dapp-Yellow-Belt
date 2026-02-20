@@ -13,8 +13,21 @@ import {
   Zap,
   Award,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  TrendingDown,
+  BarChart3,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from 'recharts';
 // We'll mock the wallet connection for now since the library install is failing in this environment
 // import { connectWallet } from "./lib/stellar";
 
@@ -27,10 +40,11 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [txStatus, setTxStatus] = useState<string | null>(null);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [history, setHistory] = useState([
-    { id: 1, bidder: "GDRA...4K2V", amount: 1200, time: "2m ago" },
-    { id: 2, bidder: "GBV3...R8O9", amount: 1150, time: "15m ago" },
-    { id: 3, bidder: "GAX7...L1P4", amount: 1000, time: "1h ago" },
+    { id: 1, bidder: "GDRA...4K2V", amount: 1200, time: "2m ago", timestamp: Date.now() - 120000, rank: 1 },
+    { id: 2, bidder: "GBV3...R8O9", amount: 1150, time: "15m ago", timestamp: Date.now() - 900000, rank: 2 },
+    { id: 3, bidder: "GAX7...L1P4", amount: 1000, time: "1h ago", timestamp: Date.now() - 3600000, rank: 3 },
   ]);
 
   useEffect(() => {
@@ -97,12 +111,16 @@ export default function Home() {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       setHighestBid(amount);
-      setHistory([{
+      const newBid = {
         id: Date.now(),
         bidder: address,
         amount,
-        time: "Just now"
-      }, ...history]);
+        time: "Just now",
+        timestamp: Date.now(),
+        rank: 1
+      };
+
+      setHistory(prev => [newBid, ...prev.map(b => ({ ...b, rank: b.rank + 1 }))]);
       setBidAmount("");
 
       // Anti-Sniping Logic Simulation
@@ -334,45 +352,113 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Live Feed */}
+            {/* Bid History Panel (Requirement: Transparency, Ranking, Graph) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="glass p-10 space-y-8 rounded-[2.5rem]"
+              className="glass overflow-hidden rounded-[2.5rem]"
             >
-              <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-black tracking-tight flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
-                  <span>LIVE FEED</span>
-                </h3>
-                <span className="text-[10px] text-white/30 font-bold uppercase tracking-[0.2em]">12 Connected</span>
-              </div>
+              <div className="p-8 space-y-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-gold/10 p-2 rounded-xl">
+                      <BarChart3 className="text-gold" size={20} />
+                    </div>
+                    <h3 className="text-2xl font-black tracking-tight uppercase">Bid Progression</h3>
+                  </div>
+                  <div className="flex items-center space-x-2 text-[10px] text-white/30 font-bold tracking-widest">
+                    <TrendingUp size={12} className="text-green-500" />
+                    <span>UPWARDS MOMENTUM</span>
+                  </div>
+                </div>
 
-              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                <AnimatePresence initial={false}>
-                  {history.map((bid, idx) => (
-                    <motion.div
-                      key={bid.id}
-                      initial={{ opacity: 0, x: -20, scale: 0.95 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      className={`flex items-center justify-between p-6 rounded-3xl transition-all border ${idx === 0 ? 'bg-gold/10 border-gold/30' : 'bg-white/5 border-white/5'}`}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black ${idx === 0 ? 'bg-gold text-black' : 'bg-white/5 text-white/20'}`}>
-                          {bid.bidder.slice(0, 1)}
+                {/* Graph (Requirement: Show bid progression graph) */}
+                <div className="h-[200px] w-full bg-white/5 rounded-[1.5rem] p-4 border border-white/5">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={[...history].reverse()}>
+                      <defs>
+                        <linearGradient id="colorBid" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#fbbf24" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#111',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          borderRadius: '12px',
+                          color: '#fff'
+                        }}
+                        itemStyle={{ color: '#fbbf24' }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="amount"
+                        stroke="#fbbf24"
+                        strokeWidth={4}
+                        fillOpacity={1}
+                        fill="url(#colorBid)"
+                        animationDuration={1500}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-black tracking-tight flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
+                    <span>TRANSPARENT LEDGER</span>
+                  </h3>
+                  <button
+                    onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                    className="flex items-center space-x-2 text-xs font-bold text-gold hover:opacity-80 transition-opacity"
+                  >
+                    <span>{isHistoryExpanded ? 'SHOW LESS' : 'VIEW ALL BIDS'}</span>
+                    {isHistoryExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  </button>
+                </div>
+
+                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                  <AnimatePresence initial={false}>
+                    {history.slice(0, isHistoryExpanded ? history.length : 3).map((bid, idx) => (
+                      <motion.div
+                        key={bid.id}
+                        initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        className={`group relative flex items-center justify-between p-6 rounded-3xl transition-all border ${bid.rank === 1 ? 'bg-gold/10 border-gold/30 ring-1 ring-gold/20' : 'bg-white/5 border-white/5'}`}
+                      >
+                        {/* Winner Highlight (Requirement: Highlight winning bid) */}
+                        {bid.rank === 1 && (
+                          <div className="absolute -top-3 left-6 bg-gold text-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg flex items-center space-x-2">
+                            <Award size={10} />
+                            <span>CURRENT WINNER</span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center space-x-6">
+                          {/* Rank Ordering (Requirement: Rank ordering) */}
+                          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm border ${bid.rank === 1 ? 'bg-gold text-black border-gold' : 'bg-black/40 text-white/30 border-white/5'}`}>
+                            #{bid.rank}
+                          </div>
+                          <div>
+                            {/* Bidder Address (Requirement: Bidder addresses) */}
+                            <p className="font-black text-sm tracking-tight font-mono">{bid.bidder}</p>
+                            {/* Time of Bid (Requirement: Time of bid) */}
+                            <p className={`text-[10px] font-bold uppercase tracking-widest ${bid.rank === 1 ? 'text-gold/60' : 'text-white/20'}`}>{bid.time}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-black text-sm tracking-tight">{bid.bidder}</p>
-                          <p className={`text-[10px] font-bold uppercase tracking-widest ${idx === 0 ? 'text-gold/60' : 'text-white/20'}`}>{bid.time}</p>
+                        <div className="text-right">
+                          <p className={`font-black text-xl tracking-tighter ${bid.rank === 1 ? 'text-gold' : 'text-white'}`}>{bid.amount} XLM</p>
+                          <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-[10px] font-bold text-white/20">VERIFIED</span>
+                            <ShieldCheck size={10} className="text-green-500/50" />
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className={`font-black text-xl tracking-tighter ${idx === 0 ? 'text-gold' : 'text-white'}`}>{bid.amount} XLM</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
             </motion.div>
           </section>

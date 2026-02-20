@@ -20,6 +20,8 @@ This document outlines the step-by-step plan for building the Real-time Auction 
 - [x] **Error Handling**: Handled 3 types of errors (Connection, Invalid Bid, Expired).
 - [x] **Transaction Status**: Visual feedback for multi-step transaction process.
 - [x] **Anti-Sniping**: Auto-extend auction logic (Realism/Fairness).
+- [x] **Bid History**: Detailed panel with ranking, timestamps, and transparency.
+- [x] **Data Visualization**: Real-time bid progression graph (Aesthetic/Insight).
 - [ ] **State Management**: Connect real Stellar state to the UI.
 
 ## 4. Compliance & Requirements
@@ -27,6 +29,7 @@ This document outlines the step-by-step plan for building the Real-time Auction 
 - [x] Minimum 2+ meaningful commits.
 - [x] Transaction status visible.
 - [x] Anti-Sniping feature implemented.
+- [x] Bid History Panel with Graph & Ranking.
 - [ ] Contract deployed on testnet.
 - [ ] Contract called from the frontend.
 

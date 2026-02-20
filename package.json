@@ -23,6 +23,7 @@
     "eslint-config-next": "16.1.6",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
+    "recharts": "^3.7.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
