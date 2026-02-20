@@ -10,14 +10,16 @@ import {
   History,
   ArrowUpRight,
   ShieldCheck,
+  ChevronUp,
+  Bell,
+  AlertCircle,
   Zap,
   Award,
   ExternalLink,
   ChevronRight,
   TrendingDown,
   BarChart3,
-  ChevronDown,
-  ChevronUp
+  ChevronDown
 } from "lucide-react";
 import {
   AreaChart,
@@ -40,6 +42,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [txStatus, setTxStatus] = useState<string | null>(null);
+  const [isOutbid, setIsOutbid] = useState(false);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [history, setHistory] = useState([
     { id: 1, bidder: "GDRA...4K2V", amount: 1200, time: "2m ago", timestamp: Date.now() - 120000, rank: 1 },
@@ -55,6 +58,31 @@ export default function Home() {
       setIsEnded(true);
     }
   }, [timeLeft]);
+
+  // Simulated Competitive Bidding (Requirement: Additive UX pattern)
+  useEffect(() => {
+    if (isEnded || !address) return;
+
+    const interval = setInterval(() => {
+      // 30% chance of being outbid every 30s if you are winning
+      if (history[0].bidder === address && Math.random() < 0.3) {
+        const outbidAmount = history[0].amount + 50;
+        const outbidder = "GCT6...W9Q2";
+
+        setIsOutbid(true);
+        setHighestBid(outbidAmount);
+        setHistory(prev => [
+          { id: Date.now(), bidder: outbidder, amount: outbidAmount, time: "Just now", timestamp: Date.now(), rank: 1 },
+          ...prev.map(b => ({ ...b, rank: b.rank + 1 }))
+        ]);
+
+        // Clear outbid alert after 8s
+        setTimeout(() => setIsOutbid(false), 8000);
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [history, address, isEnded]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -110,6 +138,7 @@ export default function Home() {
       setTxStatus("Transaction Broadcasted to Stellar...");
       await new Promise(resolve => setTimeout(resolve, 1500));
 
+      setIsOutbid(false); // Clear outbid status on your new bid
       setHighestBid(amount);
       const newBid = {
         id: Date.now(),
@@ -205,6 +234,22 @@ export default function Home() {
                 <p className="font-bold uppercase tracking-tight">{txStatus}</p>
               </motion.div>
             )}
+            {isOutbid && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="bg-orange-600 text-white px-8 py-5 rounded-[2rem] shadow-[0_20px_50px_rgba(234,88,12,0.4)] flex items-center space-x-4 pointer-events-auto border border-orange-400/50 backdrop-blur-xl"
+              >
+                <div className="bg-white/20 p-2 rounded-full animate-bounce">
+                  <Bell size={20} fill="currentColor" />
+                </div>
+                <div>
+                  <p className="font-black text-lg tracking-tight leading-none uppercase">You've been outbid!</p>
+                  <p className="text-white/60 text-xs font-bold mt-1 uppercase tracking-widest">Reclaim your lead instantly</p>
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
@@ -291,20 +336,29 @@ export default function Home() {
             {/* Status Card */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="glass p-10 space-y-10 rounded-[2.5rem] relative overflow-hidden border-gold/20"
+              animate={{
+                opacity: 1,
+                x: 0,
+                boxShadow: isOutbid ? '0 0 80px rgba(234, 88, 12, 0.3)' : '0 0 0px rgba(0,0,0,0)'
+              }}
+              transition={{
+                boxShadow: { duration: 0.5, repeat: isOutbid ? Infinity : 0, repeatType: 'reverse' }
+              }}
+              className={`glass p-10 space-y-10 rounded-[2.5rem] relative overflow-hidden transition-colors duration-500 ${isOutbid ? 'border-orange-500/50 bg-orange-950/10' : 'border-gold/20'}`}
             >
-              <div className="absolute top-[-50px] right-[-50px] w-64 h-64 bg-gold/5 blur-[80px] rounded-full" />
+              <div className={`absolute top-[-50px] right-[-50px] w-64 h-64 blur-[80px] rounded-full transition-colors ${isOutbid ? 'bg-orange-600/10' : 'bg-gold/5'}`} />
 
               <div className="flex justify-between items-start">
                 <div className="space-y-3">
-                  <span className="text-xs text-white/40 uppercase tracking-[0.3em] font-black">Current Balance</span>
+                  <span className="text-xs text-white/40 uppercase tracking-[0.3em] font-black">
+                    {isOutbid ? "⚠️ Status Alert" : "Current Balance"}
+                  </span>
                   <div className="flex items-baseline space-x-3">
                     <span className="text-6xl font-black tracking-tighter text-white">
                       {isEnded ? highestBid : formatTime(timeLeft)}
                     </span>
-                    <span className="text-xl font-bold text-gold uppercase tracking-widest">
-                      {isEnded ? "SOLD" : "LEFT"}
+                    <span className={`text-xl font-bold uppercase tracking-widest ${isOutbid ? 'text-orange-500 animate-pulse' : 'text-gold'}`}>
+                      {isEnded ? "SOLD" : isOutbid ? "OUTBID" : "LEFT"}
                     </span>
                   </div>
                 </div>
@@ -314,8 +368,8 @@ export default function Home() {
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-white/40 uppercase tracking-[0.2em] font-bold">Highest Bid</span>
                   <div className="flex items-center space-x-2">
-                    <TrendingUp size={14} className="text-green-500" />
-                    <span className="text-2xl font-black text-gold">{highestBid} XLM</span>
+                    {isOutbid ? <TrendingDown size={14} className="text-orange-500" /> : <TrendingUp size={14} className="text-green-500" />}
+                    <span className={`text-2xl font-black ${isOutbid ? 'text-orange-500' : 'text-gold'}`}>{highestBid} XLM</span>
                   </div>
                 </div>
 
@@ -327,16 +381,16 @@ export default function Home() {
                         value={bidAmount}
                         onChange={(e) => setBidAmount(e.target.value)}
                         placeholder={`Min. ${highestBid + 10} XLM`}
-                        className="w-full bg-black/50 border-2 border-white/10 rounded-2xl px-6 py-5 outline-none focus:border-gold transition-all font-black text-2xl placeholder:text-white/10"
+                        className={`w-full bg-black/50 border-2 rounded-2xl px-6 py-5 outline-none transition-all font-black text-2xl placeholder:text-white/10 ${isOutbid ? 'border-orange-500/50 focus:border-orange-500' : 'border-white/10 focus:border-gold'}`}
                       />
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={handleBid}
-                        className="w-full mt-4 bg-gold text-black py-5 rounded-2xl font-black text-xl uppercase tracking-widest shadow-[0_20px_40px_rgba(251,191,36,0.2)] hover:shadow-[0_20px_50px_rgba(251,191,36,0.3)] transition-all flex items-center justify-center space-x-3"
+                        className={`w-full mt-4 py-5 rounded-2xl font-black text-xl uppercase tracking-widest transition-all flex items-center justify-center space-x-3 ${isOutbid ? 'bg-orange-600 text-white shadow-[0_20px_40px_rgba(234,88,12,0.3)]' : 'bg-gold text-black shadow-[0_20px_40px_rgba(251,191,36,0.2)]'}`}
                       >
-                        <Zap size={24} fill="currentColor" />
-                        <span>Place Bid Now</span>
+                        {isOutbid ? <Zap size={24} fill="currentColor" className="animate-pulse" /> : <Zap size={24} fill="currentColor" />}
+                        <span>{isOutbid ? "Outbid - Reclaim Now" : "Place Bid Now"}</span>
                       </motion.button>
                     </div>
                   </div>
