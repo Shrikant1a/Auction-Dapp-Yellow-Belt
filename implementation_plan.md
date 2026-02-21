@@ -23,6 +23,7 @@ This document outlines the step-by-step plan for building the Real-time Auction 
 - [x] **Bid History**: Detailed panel with ranking, timestamps, and transparency.
 - [x] **Data Visualization**: Real-time bid progression graph (Aesthetic/Insight).
 - [x] **Outbid System**: Visual alerts and pulsing glow effects when outbid.
+- [x] **Wallet UI**: Multi-wallet selection modal (Freighter, Albedo, xBull, Hana).
 - [ ] **State Management**: Connect real Stellar state to the UI.
 
 ## 4. Compliance & Requirements
@@ -32,6 +33,7 @@ This document outlines the step-by-step plan for building the Real-time Auction 
 - [x] Anti-Sniping feature implemented.
 - [x] Bid History Panel with Graph & Ranking.
 - [x] Outbid Notification System (Visual & Glow).
+- [x] Multi-Wallet Selection UI.
 - [ ] Contract deployed on testnet.
 - [ ] Contract called from the frontend.
 

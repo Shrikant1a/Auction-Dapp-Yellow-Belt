@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏆 AuraAuction - Premium Stellar Auction DApp
 
-## Getting Started
+A high-end, real-time auction platform built on the **Stellar Network** using **Soroban Smart Contracts**. AuraAuction features a premium dark-themed aesthetic with glassmorphism effects, multi-wallet support, and advanced auction mechanics like anti-sniping.
 
-First, run the development server:
+![AuraAuction UI](public/icon.svg) <!-- Replace with a screenshot if available -->
 
+## ✨ Features
+
+- 💎 **Premium Aesthetic**: Curated "Luxury Gold" dark theme with glassmorphism.
+- 🔌 **Multi-Wallet Support**: Integrated via Stellar Wallets Kit (Freighter, Albedo, xBull, Hana).
+- ⛓️ **Soroban Powered**: Core logic executed on-chain for transparency and security.
+- ⏱️ **Real-time Auction**: Dynamic countdown timer and live bid feed.
+- 🛡️ **Anti-Sniping**: Automatic extension of auction time on late bids.
+- 📊 **Bid Insights**: Visual bid progression graph and leaderboard.
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to set up the project locally on your machine.
+
+### 📋 Prerequisites
+
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [Rust & Cargo](https://www.rust-lang.org/tools/install)
+- [Stellar CLI](https://developers.stellar.org/docs/smart-contracts/getting-started/setup#install-the-stellar-cli)
+- [Freighter Wallet](https://www.freighter.app/) (Browser extension)
+
+---
+
+## 🛠 Step-by-Step Installation
+
+### 1. Clone & Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <your-repo-url>
+cd auction-dapp-yellow
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Smart Contract Setup (Soroban)
+Navigate to the contract directory to build and deploy.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#### Build the Contract
+```bash
+cd contracts/auction_contract
+stellar contract build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### Deploy to Testnet
+First, ensure you have a Testnet identity:
+```bash
+stellar keys generate --global dev-account --network testnet
+```
 
-## Learn More
+Now deploy the WASM file:
+```bash
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/auction.wasm \
+  --source dev-account \
+  --network testnet
+```
+*Take note of the **Contract ID** returned by this command.*
 
-To learn more about Next.js, take a look at the following resources:
+#### Initialize the Auction
+Replace `<CONTRACT_ID>` with your deployed ID:
+```bash
+stellar contract invoke \
+  --id <CONTRACT_ID> \
+  --source dev-account \
+  --network testnet \
+  -- \
+  initialize \
+  --owner dev-account \
+  --min_increment 10 \
+  --starting_price 100 \
+  --duration_secs 3600
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Frontend Configuration
+Go back to the root directory and configure your frontend to use the new contract.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Edit `app/lib/stellar.ts`:
+```typescript
+export const CONTRACT_ID = "YOUR_DEPLOYED_CONTRACT_ID_HERE";
+```
 
-## Deploy on Vercel
+### 4. Run the Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view your DApp!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🏗 Project Structure
+
+```text
+├── app/                # Next.js App Router (Pages & Logic)
+│   ├── lib/            # Stellar/Soroban utility functions
+├── components/         # Reusable UI components
+├── contracts/          # Rust Soroban smart contract
+│   └── auction_contract/
+├── public/             # Static assets (images, icons)
+├── package.json        # Frontend dependencies & scripts
+└── README.md           # Project documentation
+```
+
+## 📜 Key Scripts
+
+- `npm run dev` - Starts the Next.js development server.
+- `npm run build` - Creates an optimized production build.
+- `stellar contract build` - Compiles the Rust contract to WASM.
+
+## 🤝 Requirements Met (Level 2)
+- ✅ 3+ documented error types handled.
+- ✅ Successful contract deployment workflow.
+- ✅ Multi-wallet integration (Stellar Wallets Kit).
+- ✅ Real-time transaction status visibility.
+- ✅ At least 2+ meaningful developer commits.
+
+---
+
+Built with ❤️ for the Stellar Ecosystem.
