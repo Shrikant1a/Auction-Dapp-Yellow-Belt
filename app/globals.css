@@ -4,16 +4,18 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  --color-gold: #fbbf24;
-  --color-gold-muted: #d97706;
+  --color-orange-primary: #FF9F0A;
+  --color-orange-secondary: #FFB340;
+  --color-dark-bg: #050505;
+  --color-dark-card: #121212;
 }
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --accent: #fbbf24;
-  --card-bg: #111111;
-  --border: #222222;
+  --background: #050505;
+  --foreground: #ffffff;
+  --accent: #FF9F0A;
+  --card-bg: #121212;
+  --border: rgba(255, 255, 255, 0.1);
 }
 
 @layer base {

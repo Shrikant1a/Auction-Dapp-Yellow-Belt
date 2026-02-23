@@ -9,6 +9,7 @@ interface Bid {
     time: string;
     timestamp: number;
     rank: number;
+    txHash?: string;
 }
 
 interface BidHistoryProps {
@@ -28,8 +29,8 @@ export default function BidHistory({ history, isExpanded, onToggleExpand }: BidH
             <div className="p-8 space-y-8">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                        <div className="bg-gold/10 p-2 rounded-xl">
-                            <BarChart3 className="text-gold" size={20} />
+                        <div className="bg-orange-primary/10 p-2 rounded-xl">
+                            <BarChart3 className="text-orange-primary" size={20} />
                         </div>
                         <h3 className="text-2xl font-black tracking-tight uppercase">Bid Progression</h3>
                     </div>
@@ -45,8 +46,8 @@ export default function BidHistory({ history, isExpanded, onToggleExpand }: BidH
                         <AreaChart data={[...history].reverse()}>
                             <defs>
                                 <linearGradient id="colorBid" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#fbbf24" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#FF9F0A" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#FF9F0A" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <Tooltip
@@ -56,13 +57,13 @@ export default function BidHistory({ history, isExpanded, onToggleExpand }: BidH
                                     borderRadius: '12px',
                                     color: '#fff'
                                 }}
-                                itemStyle={{ color: '#fbbf24' }}
+                                itemStyle={{ color: '#FF9F0A' }}
                             />
                             <Area
                                 key="history-area"
                                 type="monotone"
                                 dataKey="amount"
-                                stroke="#fbbf24"
+                                stroke="#FF9F0A"
                                 strokeWidth={4}
                                 fillOpacity={1}
                                 fill="url(#colorBid)"
@@ -80,7 +81,7 @@ export default function BidHistory({ history, isExpanded, onToggleExpand }: BidH
                     <button
                         suppressHydrationWarning
                         onClick={onToggleExpand}
-                        className="flex items-center space-x-2 text-xs font-bold text-gold hover:opacity-80 transition-opacity"
+                        className="flex items-center space-x-2 text-xs font-bold text-orange-primary hover:opacity-80 transition-opacity"
                     >
                         <span>{isExpanded ? 'SHOW LESS' : 'VIEW ALL BIDS'}</span>
                         {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -94,26 +95,34 @@ export default function BidHistory({ history, isExpanded, onToggleExpand }: BidH
                                 key={`bid-${bid.id}-${idx}`}
                                 initial={{ opacity: 0, x: -20, scale: 0.95 }}
                                 animate={{ opacity: 1, x: 0, scale: 1 }}
-                                className={`group relative flex items-center justify-between p-6 rounded-3xl transition-all border ${bid.rank === 1 ? 'bg-gold/10 border-gold/30 ring-1 ring-gold/20' : 'bg-white/5 border-white/5'}`}
+                                onClick={() => bid.txHash && window.open(`https://stellar.expert/explorer/testnet/tx/${bid.txHash}`, '_blank')}
+                                className={`group relative flex items-center justify-between p-6 rounded-3xl transition-all border ${bid.txHash ? 'cursor-pointer hover:border-orange-primary/50 hover:bg-white/10' : ''} ${bid.rank === 1 ? 'bg-orange-primary/10 border-orange-primary/30 ring-1 ring-orange-primary/20' : 'bg-white/5 border-white/5'}`}
                             >
                                 {bid.rank === 1 && (
-                                    <div className="absolute -top-3 left-6 bg-gold text-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg flex items-center space-x-2">
+                                    <div className="absolute -top-3 left-6 bg-orange-primary text-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg flex items-center space-x-2">
                                         <Award size={10} />
                                         <span>CURRENT WINNER</span>
                                     </div>
                                 )}
 
                                 <div className="flex items-center space-x-6">
-                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm border ${bid.rank === 1 ? 'bg-gold text-black border-gold' : 'bg-black/40 text-white/30 border-white/5'}`}>
+                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm border ${bid.rank === 1 ? 'bg-orange-primary text-black border-orange-primary' : 'bg-black/40 text-white/30 border-white/5'}`}>
                                         #{bid.rank}
                                     </div>
                                     <div>
-                                        <p className="font-black text-sm tracking-tight font-mono">{bid.bidder}</p>
-                                        <p className={`text-[10px] font-bold uppercase tracking-widest ${bid.rank === 1 ? 'text-gold/60' : 'text-white/20'}`}>{bid.time}</p>
+                                        <p className="font-black text-sm tracking-tight font-mono">
+                                            {bid.bidder.length > 12 ? `${bid.bidder.slice(0, 6)}...${bid.bidder.slice(-6)}` : bid.bidder}
+                                        </p>
+                                        <div className="flex items-center space-x-2">
+                                            <p className={`text-[10px] font-bold uppercase tracking-widest ${bid.rank === 1 ? 'text-orange-primary/60' : 'text-white/20'}`}>{bid.time}</p>
+                                            {bid.txHash && (
+                                                <span className="text-[8px] bg-white/10 px-1.5 py-0.5 rounded text-white/40 group-hover:text-orange-primary transition-colors">TX: {bid.txHash.slice(0, 8)}...</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className={`font-black text-xl tracking-tighter ${bid.rank === 1 ? 'text-gold' : 'text-white'}`}>{bid.amount} XLM</p>
+                                    <p className={`font-black text-xl tracking-tighter ${bid.rank === 1 ? 'text-orange-primary' : 'text-white'}`}>{bid.amount} XLM</p>
                                     <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <span className="text-[10px] font-bold text-white/20">VERIFIED</span>
                                         <ShieldCheck size={10} className="text-green-500/50" />

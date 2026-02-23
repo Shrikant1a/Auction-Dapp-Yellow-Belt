@@ -43,6 +43,7 @@ export default function WalletConnect({ setAddress, setKit, setWalletName, class
 
     return (
         <button
+            suppressHydrationWarning
             onClick={connect}
             className={className || "px-4 py-2 bg-black text-white rounded-lg"}
         >

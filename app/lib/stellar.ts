@@ -1,12 +1,35 @@
-import { Horizon, Networks, rpc, Contract, TransactionBuilder, Address, xdr, nativeToScVal } from '@stellar/stellar-sdk';
+import { Horizon, Networks, rpc, Contract, TransactionBuilder, Address, xdr, nativeToScVal, Account, scValToNative } from '@stellar/stellar-sdk';
 
 export const RPC_URL = 'https://soroban-testnet.stellar.org';
 export const NETWORK_PASSPHRASE = Networks.TESTNET;
 export const HORIZON_URL = 'https://horizon-testnet.stellar.org';
-export const AUCTION_CONTRACT_ID = 'CDGC73EHRGV7GUYDTZ7UCLREY7NDBB7AI75Q7NFPO7Q24RAZYLS6SI6NO';
+export const AUCTION_CONTRACT_ID = 'CDNIYIJSTGTVOYLIKGDQQSWAYUTLJBV3JOGUURMYYS43FS2S4L5W3LX6';
 
 export const server = new Horizon.Server(HORIZON_URL);
 export const rpcServer = new rpc.Server(RPC_URL);
+
+// Contract calling helper
+
+export async function getAuctionState() {
+  const contract = new Contract(AUCTION_CONTRACT_ID);
+  try {
+    const tx = new TransactionBuilder(
+      new Account("GCDBFMGKDV2GMLVNLUBV7MHBF7LFPWAJGYWBJTHHSZNLVG44LTZXJGT7", "0"),
+      { fee: "100", networkPassphrase: NETWORK_PASSPHRASE }
+    )
+      .addOperation(contract.call("get_auction"))
+      .setTimeout(30)
+      .build();
+
+    const simulation = await rpcServer.simulateTransaction(tx);
+    if (rpc.Api.isSimulationSuccess(simulation) && simulation.result) {
+      return scValToNative(simulation.result.retval);
+    }
+  } catch (e) {
+    console.error("Error fetching auction state:", e);
+  }
+  return null;
+}
 
 // Contract calling helper
 export async function placeBidOnChain(userAddress: string, amount: number, signFn: (xdr: string) => Promise<string>) {
@@ -33,7 +56,7 @@ export async function placeBidOnChain(userAddress: string, amount: number, signF
   // 3. Simulate (Soroban requires simulation to set footprint/fees)
   const simulation = await rpcServer.simulateTransaction(tx);
   if (rpc.Api.isSimulationError(simulation)) {
-    throw new Error(`Simulation failed: ${simulation.error}`);
+    throw new Error(`Simulation failed: ${simulation.error} `);
   }
 
   const preparedTx = rpc.assembleTransaction(tx, simulation).build();
@@ -45,26 +68,36 @@ export async function placeBidOnChain(userAddress: string, amount: number, signF
   const response = await rpcServer.sendTransaction(TransactionBuilder.fromXDR(signedXDR, NETWORK_PASSPHRASE));
 
   if (response.status === 'ERROR') {
-    throw new Error(`Transaction failed: ${JSON.stringify(response.errorResult)}`);
+    throw new Error(`Transaction failed: ${JSON.stringify(response.errorResult)} `);
   }
 
   return response.hash;
 }
 
 // Event listening placeholder logic
-export async function getRecentEvents() {
-  const response = await rpcServer.getEvents({
-    startLedger: 0,
-    filters: [
-      {
-        type: 'contract',
-        contractIds: [AUCTION_CONTRACT_ID],
-      },
-    ],
-    limit: 10,
-  });
-  return response.events;
+export async function getRecentEvents(startLedger?: number) {
+  try {
+    const latestLedger = (await rpcServer.getLatestLedger()).sequence;
+    const start = startLedger || Math.max(latestLedger - 100, 1);
+
+    const response = await rpcServer.getEvents({
+      startLedger: start,
+      filters: [
+        {
+          type: 'contract',
+          contractIds: [AUCTION_CONTRACT_ID],
+        },
+      ],
+      limit: 10,
+    });
+    return response.events;
+  } catch (e) {
+    console.error("Error fetching events:", e);
+    return [];
+  }
 }
+
+
 
 // Native Wallet Support (No library dependency)
 export async function connectWallet() {

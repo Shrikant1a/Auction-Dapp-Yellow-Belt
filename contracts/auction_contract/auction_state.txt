@@ -1,0 +1,2 @@
+ℹ️  Simulation identified as read-only. Send by rerunning with `--send=yes`.
+{"end_time":1771927254,"extension_duration":300,"extension_window":300,"finalized":false,"highest_bid":"1260","highest_bidder":"GDGM3GIZDK4XHLKI3HWAL67MK534S5ALM7ISCTUZFXC5BJFNHWNIRW7F","min_increment":"10","owner":"GCDBFMGKDV2GMLVNLUBV7MHBF7LFPWAJGYWBJTHHSZNLVG44LTZXJGT7"}
