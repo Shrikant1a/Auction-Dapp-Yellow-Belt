@@ -40,5 +40,7 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Build Rust
-        run: cargo build --verbose
+      - name: Build Rust contract
+  run: |
+    cd contracts/auction_contract
+    cargo build --verbose
