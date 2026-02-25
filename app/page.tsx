@@ -18,6 +18,10 @@ import Footer from "@/components/Footer";
 import { xdr, scValToNative } from "@stellar/stellar-sdk";
 import { placeBidOnChain, getRecentEvents, getAuctionState } from "@/app/lib/stellar";
 
+import CreateAuctionModal from "@/components/CreateAuctionModal";
+import UserActivityModal from "@/components/UserActivityModal";
+import NotificationModal, { Notification } from "@/components/NotificationModal";
+
 export default function Home() {
   const [address, setAddress] = useState<string | null>(null);
   const [bidAmount, setBidAmount] = useState<string>("");
@@ -33,10 +37,49 @@ export default function Home() {
   const [walletName, setWalletName] = useState<string | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [isSimulating, setIsSimulating] = useState(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [auctionData, setAuctionData] = useState({
+    name: "Aero Precision",
+    details: "The Ferrari 488 Pista. A masterpiece of aerodynamic engineering and raw power. This specific unit is tracked on the Stellar blockchain, ensuring an immutable record of ownership and service history.",
+    image: "https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&q=80&w=1000"
+  });
+
+  // New Auction Setup Logic
+  const handleNewAuction = (data: any) => {
+    // Switch to Demo Mode for the new listing to avoid state mismatch with the real contract
+    setIsDemoMode(true);
+    setHighestBid(data.startingPrice || 100);
+    setTimeLeft((data.duration || 24) * 3600);
+    setAuctionData({
+      name: data.name || "Custom Supercar",
+      details: data.details || "A custom listed supercar on the Stellar network. Verified authenticity and performance specs.",
+      image: data.image || "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80&w=1000"
+    });
+    setIsEnded(false);
+    setHistory([]);
+    setIsOutbid(false);
+    setTxStatus("New Local Auction Launched! (Demo Mode Active)");
+    setTimeout(() => setTxStatus(null), 5000);
+  };
 
   // Audio Cues for Outbid
   useEffect(() => {
     if (isOutbid && typeof window !== 'undefined') {
+      // Add notification
+      const id = `outbid-${Date.now()}`;
+      setNotifications(prev => [{
+        id,
+        type: 'outbid',
+        message: "You've been outbid! Place a higher bid to stay in the race.",
+        time: "Just now",
+        timestamp: Date.now(),
+        read: false
+      }, ...prev].slice(0, 20));
+
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
@@ -67,6 +110,8 @@ export default function Home() {
 
   // INITIAL STATE FETCH
   useEffect(() => {
+    if (isDemoMode) return;
+
     const fetchState = async () => {
       try {
         const state = await getAuctionState();
@@ -96,12 +141,14 @@ export default function Home() {
       }
     };
     fetchState();
-  }, [address]);
+  }, [address, isDemoMode]);
 
   // REAL-TIME EVENT INTEGRATION
   const [lastLedger, setLastLedger] = useState<number | undefined>(undefined);
 
   useEffect(() => {
+    if (isDemoMode) return;
+
     const pollEvents = async () => {
       try {
         const events = await getRecentEvents(lastLedger);
@@ -142,6 +189,22 @@ export default function Home() {
                 if (uniqueNewBids.length === 0) return prev;
 
                 const combined = [...uniqueNewBids, ...prev];
+
+                // Add notification for new bids if not from user
+                uniqueNewBids.forEach(bid => {
+                  if (bid.bidder !== address) {
+                    setNotifications(p => [{
+                      id: `bid-${bid.id}-${Date.now()}`,
+                      type: 'bid',
+                      message: `New bid of ${bid.amount} XLM placed by ${bid.bidder.slice(0, 4)}...${bid.bidder.slice(-4)}`,
+                      time: "Just now",
+                      timestamp: Date.now(),
+                      txHash: bid.txHash,
+                      read: false
+                    }, ...p].slice(0, 20));
+                  }
+                });
+
                 return combined.sort((a, b) => b.amount - a.amount).map((b, i) => ({ ...b, rank: i + 1 }));
               });
             }
@@ -154,7 +217,7 @@ export default function Home() {
 
     const interval = setInterval(pollEvents, 5000);
     return () => clearInterval(interval);
-  }, [highestBid, address, lastLedger]);
+  }, [highestBid, address, lastLedger, isDemoMode]);
 
   // OPPONENT SIMULATION ENGINE
   useEffect(() => {
@@ -189,6 +252,16 @@ export default function Home() {
             txHash: `sim_${Math.random().toString(36).slice(2, 10)}`,
             rank: 1
           };
+
+          setNotifications(p => [{
+            id: `sim-bid-${Date.now()}`,
+            type: 'outbid',
+            message: `OUTBID! ${randomOpponent} just placed a bid of ${newBidAmount} XLM`,
+            time: "Just now",
+            timestamp: Date.now(),
+            read: false
+          }, ...p].slice(0, 20));
+
           return [botBid, ...prev.map(b => ({ ...b, rank: b.rank + 1 }))].slice(0, 15);
         });
       }, delay);
@@ -226,22 +299,29 @@ export default function Home() {
     setTxStatus("Requesting Signature...");
 
     try {
-      const txHash = await placeBidOnChain(
-        address,
-        amount,
-        async (xdr: string) => {
-          const { signedTxXdr } = await kit.signTransaction(xdr);
-          return signedTxXdr;
-        }
-      );
+      let txHash;
+      if (isDemoMode) {
+        // SIMULATED BID
+        await new Promise(r => setTimeout(r, 1500));
+        txHash = `sim_${Math.random().toString(36).slice(2, 10)}`;
+      } else {
+        // REAL ON-CHAIN BID
+        txHash = await placeBidOnChain(
+          address,
+          amount,
+          async (xdr: string) => {
+            const { signedTxXdr } = await kit.signTransaction(xdr);
+            return signedTxXdr;
+          }
+        );
+      }
 
-      setTxStatus("Transaction Broadcasted...");
+      setTxStatus(isDemoMode ? "Confirmed (Simulated)" : "Transaction Broadcasted...");
 
-      // OPTIMISTIC UPDATE: Set local UI immediately so user sees their bid
+      // UPDATE UI
       setHighestBid(amount);
       setIsOutbid(false);
 
-      // Add to history right away
       setHistory(prev => {
         const newBid = {
           id: Date.now(),
@@ -252,35 +332,57 @@ export default function Home() {
           txHash,
           rank: 1
         };
+        setNotifications(p => [{
+          id: `user-bid-${Date.now()}`,
+          type: 'success',
+          message: `Success! Your bid of ${amount} XLM has been secured.`,
+          time: "Just now",
+          timestamp: Date.now(),
+          txHash,
+          read: true
+        }, ...p].slice(0, 20));
+
         const filtered = prev.filter(b => b.txHash !== txHash);
         return [newBid, ...filtered.map(b => ({ ...b, rank: b.rank + 1 }))].slice(0, 10);
       });
 
-      // SYNC: Pull state after a short delay to account for ledger finalization
-      setTimeout(async () => {
-        const state = await getAuctionState();
-        if (state) {
-          const contractBid = Number(state.highest_bid);
-          // Only update if the contract is ahead (e.g., someone else bid higher in between)
-          if (contractBid > amount) {
-            setHighestBid(contractBid);
-            if (state.highest_bidder !== address) {
-              setIsOutbid(true);
+      if (!isDemoMode) {
+        // SYNC
+        setTimeout(async () => {
+          const state = await getAuctionState();
+          if (state) {
+            const contractBid = Number(state.highest_bid);
+            if (contractBid > amount) {
+              setHighestBid(contractBid);
+              if (state.highest_bidder !== address) {
+                setIsOutbid(true);
+              }
             }
           }
-        }
-      }, 3000); // 3 second delay for ledger sync
+        }, 3000);
+      }
 
       setBidAmount("");
-      setTxStatus(`Confirmed (Hash: ${txHash.slice(0, 8)}...)`);
+      if (!isDemoMode) setTxStatus(`Confirmed (Hash: ${txHash.slice(0, 8)}...)`);
       setTimeout(() => setTxStatus(null), 5000);
     } catch (err: any) {
       setTxStatus(null);
-      setError(`Transaction Failed: ${err.message || "Unknown error"}`);
+      let errorMsg = err.message || "Unknown error";
+
+      if (errorMsg.includes("UnreachableCodeReached") || errorMsg.includes("InvalidAction")) {
+        errorMsg = "Blockchain Error: The smart contract rejected this bid. The current real contract state is likely set to a much higher value (e.g. 1490 XLM) than the current local demo.";
+      }
+
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    (window as any).openCreateAuction = () => setIsCreateModalOpen(true);
+    return () => { delete (window as any).openCreateAuction; };
+  }, []);
 
 
   return (
@@ -298,6 +400,9 @@ export default function Home() {
           setAddress={setAddress}
           setKit={setKit}
           setWalletName={setWalletName}
+          onCartClick={() => setIsActivityModalOpen(true)}
+          onNotificationClick={() => setIsNotificationModalOpen(true)}
+          hasUnread={notifications.some(n => !n.read)}
         />
 
         <Hero />
@@ -330,7 +435,11 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <AuctionShowcase />
+            <AuctionShowcase
+              name={auctionData.name}
+              details={auctionData.details}
+              image={auctionData.image}
+            />
 
             <div className="lg:col-span-5 space-y-8">
               <BidControls
@@ -356,6 +465,27 @@ export default function Home() {
 
         <Footer />
       </main>
+
+      <CreateAuctionModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleNewAuction}
+      />
+
+      <UserActivityModal
+        isOpen={isActivityModalOpen}
+        onClose={() => setIsActivityModalOpen(false)}
+        history={history}
+        address={address}
+      />
+
+      <NotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        notifications={notifications}
+        onMarkAsRead={(id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
+        onClearAll={() => setNotifications([])}
+      />
     </div>
   );
 }

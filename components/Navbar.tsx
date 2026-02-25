@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ShoppingCart, Bell, ArrowRight, Car } from "lucide-react";
+import { ShoppingCart, Bell, ArrowRight, Car, PlusCircle } from "lucide-react";
 import WalletConnect from "./WalletConnectModal";
 import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit";
 
@@ -8,9 +8,12 @@ interface NavbarProps {
     setAddress: (address: string | null) => void;
     setKit: (kit: StellarWalletsKit | null) => void;
     setWalletName: (name: string | null) => void;
+    onCartClick: () => void;
+    onNotificationClick: () => void;
+    hasUnread: boolean;
 }
 
-export default function Navbar({ address, setAddress, setKit, setWalletName }: NavbarProps) {
+export default function Navbar({ address, setAddress, setKit, setWalletName, onCartClick, onNotificationClick, hasUnread }: NavbarProps) {
     const navLinks = [
         { name: "Dashboard", id: "live-auctions", active: true },
         { name: "Catalog", id: "live-auctions", active: false },
@@ -55,22 +58,48 @@ export default function Navbar({ address, setAddress, setKit, setWalletName }: N
                 animate={{ opacity: 1, x: 0 }}
                 className="flex items-center space-x-6"
             >
+                <button
+                    onClick={() => (window as any).openCreateAuction?.()}
+                    className="hidden md:flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full text-xs font-bold hover:bg-white/10 transition-all text-orange-primary"
+                >
+                    <PlusCircle size={16} />
+                    <span>Create Listing</span>
+                </button>
+
                 <div className="flex items-center space-x-4 text-gray-400">
-                    <button className="hover:text-white transition-colors">
+                    <button
+                        onClick={onCartClick}
+                        className="hover:text-white transition-colors"
+                    >
                         <ShoppingCart size={20} />
                     </button>
-                    <button className="hover:text-white transition-colors">
+                    <button
+                        onClick={onNotificationClick}
+                        className="hover:text-white transition-colors relative"
+                    >
                         <Bell size={20} />
+                        {hasUnread && (
+                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-primary rounded-full animate-pulse" />
+                        )}
                     </button>
                 </div>
 
                 {address ? (
-                    <div className="bg-orange-primary/10 border border-orange-primary/20 px-4 py-2 rounded-full flex items-center space-x-2">
+                    <button
+                        onClick={() => {
+                            setAddress(null);
+                            setKit(null);
+                            setWalletName(null);
+                        }}
+                        className="bg-orange-primary/10 border border-orange-primary/20 px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-orange-primary/20 transition-all group"
+                        title="Click to Disconnect"
+                    >
                         <div className="w-2 h-2 bg-orange-primary rounded-full animate-pulse" />
                         <span className="text-xs font-bold text-orange-primary">
                             {address.slice(0, 4)}...{address.slice(-4)}
                         </span>
-                    </div>
+                        <span className="text-[10px] text-orange-primary/50 font-bold uppercase ml-2 hidden group-hover:inline">Disconnect</span>
+                    </button>
                 ) : (
                     <WalletConnect
                         setAddress={setAddress}

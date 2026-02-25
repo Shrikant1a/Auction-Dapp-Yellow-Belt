@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Zap, Award } from "lucide-react";
+import { TrendingUp, TrendingDown, Zap, Award, PlusCircle } from "lucide-react";
 
 interface BidControlsProps {
     isEnded: boolean;
@@ -119,10 +119,19 @@ export default function BidControls({
                     )}
 
                     {isEnded && (
-                        <div className="bg-orange-primary/10 border border-orange-primary/20 p-6 rounded-2xl text-center">
-                            <Award className="mx-auto text-orange-primary mb-3" size={32} />
-                            <h4 className="font-black text-orange-primary text-xl uppercase tracking-tighter">Auction Concluded</h4>
-                            <p className="text-white/60 text-sm mt-1">Winner: {winner}</p>
+                        <div className="space-y-4">
+                            <div className="bg-orange-primary/10 border border-orange-primary/20 p-6 rounded-2xl text-center">
+                                <Award className="mx-auto text-orange-primary mb-3" size={32} />
+                                <h4 className="font-black text-orange-primary text-xl uppercase tracking-tighter">Auction Concluded</h4>
+                                <p className="text-white/60 text-sm mt-1">Winner: {winner}</p>
+                            </div>
+                            <button
+                                onClick={() => (window as any).openCreateAuction?.()}
+                                className="w-full bg-white/5 border border-white/10 text-white py-4 rounded-2xl font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center space-x-2"
+                            >
+                                <PlusCircle className="text-orange-primary" size={20} />
+                                <span>Launch New Auction</span>
+                            </button>
                         </div>
                     )}
                 </div>

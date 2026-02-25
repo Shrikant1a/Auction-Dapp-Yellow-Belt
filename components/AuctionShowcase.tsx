@@ -1,7 +1,13 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Zap, ShieldCheck, ChevronRight, Award, ExternalLink } from "lucide-react";
 
-export default function AuctionShowcase() {
+interface AuctionShowcaseProps {
+    name: string;
+    details: string;
+    image: string;
+}
+
+export default function AuctionShowcase({ name, details, image }: AuctionShowcaseProps) {
     return (
         <section className="lg:col-span-7 space-y-8">
             <motion.div
@@ -13,14 +19,18 @@ export default function AuctionShowcase() {
                 <div className="absolute inset-0 flex items-center justify-center bg-dark-card overflow-hidden">
                     <div className="w-[500px] h-[500px] bg-orange-primary/10 blur-[150px] absolute animate-pulse" />
 
-                    <motion.img
-                        initial={{ scale: 1.1 }}
-                        animate={{ scale: 1.05 }}
-                        transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
-                        src="https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&q=80&w=1000"
-                        alt="Ferrari 488"
-                        className="w-full h-full object-cover transform scale-125 group-hover:scale-135 transition-transform duration-[3s]"
-                    />
+                    <AnimatePresence mode="wait">
+                        <motion.img
+                            key={image}
+                            initial={{ opacity: 0, scale: 1.2 }}
+                            animate={{ opacity: 1, scale: 1.05 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ duration: 0.8 }}
+                            src={image}
+                            alt={name}
+                            className="w-full h-full object-cover transform scale-125 group-hover:scale-135 transition-transform duration-[3s]"
+                        />
+                    </AnimatePresence>
                     <div className="absolute inset-0 bg-gradient-to-t from-dark-bg/80 via-transparent to-transparent" />
                 </div>
 
@@ -31,7 +41,21 @@ export default function AuctionShowcase() {
 
                 <div className="absolute bottom-10 left-10 right-10">
                     <div className="space-y-2">
-                        <h2 className="text-5xl font-black tracking-tight leading-none uppercase drop-shadow-lg">Aero<br /><span className="text-orange-primary">Precision</span></h2>
+                        <motion.h2
+                            key={name}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="text-5xl font-black tracking-tight leading-none uppercase drop-shadow-lg"
+                        >
+                            {name.split(' ').length > 1 ? (
+                                <>
+                                    {name.split(' ')[0]}<br />
+                                    <span className="text-orange-primary">{name.split(' ').slice(1).join(' ')}</span>
+                                </>
+                            ) : (
+                                <span className="text-orange-primary">{name}</span>
+                            )}
+                        </motion.h2>
                         <div className="flex items-center space-x-2 text-white text-sm font-medium drop-shadow-md">
                             <ShieldCheck size={14} className="text-orange-primary" />
                             <span>Verified Supercar Asset via Stellar</span>
@@ -64,12 +88,16 @@ export default function AuctionShowcase() {
                         <ExternalLink size={20} />
                     </a>
                 </div>
-                <p className="text-white/60 leading-relaxed text-lg font-light">
-                    The Ferrari 488 Pista. A masterpiece of aerodynamic engineering and raw power.
-                    This specific unit is tracked on the Stellar blockchain, ensuring an immutable
-                    record of ownership and service history.
-                </p>
+                <motion.p
+                    key={details}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-white/60 leading-relaxed text-lg font-light"
+                >
+                    {details}
+                </motion.p>
             </motion.div>
         </section>
     );
 }
+

@@ -15,6 +15,12 @@ A high-end, real-time auction platform built on the **Stellar Network** using **
 
 ---
 
+## 🌐 Live Demo
+[**Click here to view the Live Demo**](https://auction-dapp-yellow-belt.vercel.app/) 
+*(Note: Replace this link with your actual deployment URL after following the deployment guide below)*
+
+---
+
 ## 🚀 Getting Started
 
 Follow these steps to set up the project locally on your machine.
@@ -122,3 +128,30 @@ Open [http://localhost:3000](http://localhost:3000) to view your DApp!
 ---
 
 Built with ❤️ for the Stellar Ecosystem.
+
+---
+
+## 🚀 How to Deploy to Vercel (Live Demo)
+
+To host your DApp online for others to use, follow these steps:
+
+### 1. Push to GitHub
+If you haven't already, upload your code to a GitHub repository.
+
+### 2. Connect to Vercel
+1. Go to [Vercel.com](https://vercel.com) and sign in with GitHub.
+2. Click **"Add New"** > **"Project"**.
+3. Import your `Auction-Dapp-Yellow-Belt` repository.
+
+### 3. Configure Build Settings
+Vercel should automatically detect Next.js. Most settings are default:
+- **Framework Preset**: Next.js
+- **Root Directory**: `./`
+- **Build Command**: `npm run build`
+- **Output Directory**: `.next`
+
+### 4. Deploy!
+Click **"Deploy"**. Once finished, Vercel will provide you with a production URL (e.g., `https://auction-dapp.vercel.app`).
+
+### 5. Update README
+Copy the URL provided by Vercel and paste it into the **Live Demo** section at the top of this `README.md`.
