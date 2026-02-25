@@ -12,12 +12,20 @@ A high-end, real-time auction platform built on the **Stellar Network** using **
 - ⏱️ **Real-time Auction**: Dynamic countdown timer and live bid feed.
 - 🛡️ **Anti-Sniping**: Automatic extension of auction time on late bids.
 - 📊 **Bid Insights**: Visual bid progression graph and leaderboard.
+- 🛒 **Activity Record**: Personalized "Your Activity" cart to track your bid history.
+- 🔔 **Smart Notifications**: Real-time alerts for outbids and successful transactions.
 
 ---
 
 ## 🌐 Live Demo
 [**Click here to view the Live Demo**](https://auction-dapp-yellow-belt.vercel.app/) 
 *(Note: Replace this link with your actual deployment URL after following the deployment guide below)*
+
+---
+
+## 🎬 Demo Video
+[**Watch the Demo Video**](https://link-to-your-video.com)
+*(Please record a short walkthrough of the DApp and replace this link)*
 
 ---
 

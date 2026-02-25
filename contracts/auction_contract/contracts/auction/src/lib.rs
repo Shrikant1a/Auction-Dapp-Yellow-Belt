@@ -128,3 +128,5 @@ impl AuctionContract {
         );
     }
 }
+
+mod test;
