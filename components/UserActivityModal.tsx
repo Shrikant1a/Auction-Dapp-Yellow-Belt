@@ -1,15 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingBag, ArrowUpRight, Clock, Award, History } from "lucide-react";
 
-interface Bid {
-    id: number;
-    bidder: string;
-    amount: number;
-    time: string;
-    timestamp: number;
-    rank: number;
-    txHash?: string;
-}
+import { Bid } from "./BidHistory";
+
 
 interface UserActivityModalProps {
     isOpen: boolean;
@@ -18,9 +11,11 @@ interface UserActivityModalProps {
     address: string | null;
 }
 
+
+
 export default function UserActivityModal({ isOpen, onClose, history, address }: UserActivityModalProps) {
     const userBids = history.filter(bid => bid.bidder === address);
-    const isWinner = history.length > 0 && history[0].bidder === address;
+    const isWinner = history.length > 0 && history[0]?.bidder === address;
 
     return (
         <AnimatePresence>

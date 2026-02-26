@@ -10,7 +10,7 @@ interface BidControlsProps {
     setBidAmount: (value: string) => void;
     onBid: () => void;
     formatTime: (seconds: number) => string;
-    winner: string;
+    winner?: string;
 }
 
 export default function BidControls({

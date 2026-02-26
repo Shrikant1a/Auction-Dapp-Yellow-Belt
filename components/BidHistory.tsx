@@ -2,8 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BarChart3, TrendingUp, ChevronUp, ChevronDown, Award, ShieldCheck } from "lucide-react";
 import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
 
-interface Bid {
-    id: number;
+export interface Bid {
+    id: number | string;
     bidder: string;
     amount: number;
     time: string;

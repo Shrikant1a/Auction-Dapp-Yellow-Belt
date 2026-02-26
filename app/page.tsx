@@ -9,7 +9,7 @@ import Navbar from "@/components/Navbar";
 import StatusMessages from "@/components/StatusMessages";
 import AuctionShowcase from "@/components/AuctionShowcase";
 import BidControls from "@/components/BidControls";
-import BidHistory from "@/components/BidHistory";
+import BidHistory, { Bid } from "@/components/BidHistory";
 import Hero from "@/components/Hero";
 import SearchSection from "@/components/SearchSection";
 import Features from "@/components/Features";
@@ -24,6 +24,7 @@ import { placeBidOnChain, getRecentEvents, getAuctionState } from "@/app/lib/ste
 import CreateAuctionModal from "@/components/CreateAuctionModal";
 import UserActivityModal from "@/components/UserActivityModal";
 import NotificationModal, { Notification } from "@/components/NotificationModal";
+
 
 interface Unit {
   id: string;
@@ -66,7 +67,7 @@ export default function Home() {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [kit, setKit] = useState<StellarWalletsKit | null>(null);
   const [walletName, setWalletName] = useState<string | null>(null);
-  const [history, setHistory] = useState<unknown[]>([]);
+  const [history, setHistory] = useState<Bid[]>([]);
   const [isSimulating, setIsSimulating] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
@@ -99,7 +100,7 @@ export default function Home() {
   //   setTimeout(() => setTxStatus(null), 5000);
   // };
 
-  //New Auction Setup Logic 2 
+  //New Auction Setup Logic 2
   type AuctionFormData = {
     startingPrice?: number;
     duration?: number;
@@ -327,7 +328,7 @@ export default function Home() {
     if (!isSimulating || isEnded || !address) return;
 
     // Check if user is currently the winner
-    const userIsWinner = history.length > 0 && history[0].bidder === address;
+    const userIsWinner = history.length > 0 && history[0]?.bidder === address;
 
     if (userIsWinner) {
       const delay = Math.floor(Math.random() * 8000) + 7000; // 7-15 seconds
