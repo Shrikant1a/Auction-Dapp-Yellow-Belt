@@ -251,9 +251,10 @@ export default function Home() {
           const latestEvent = events[events.length - 1];
           setLastLedger(latestEvent.ledger + 1);
 
-          const bidEvents = events.filter((e: { topics?: string[]; type?: string }) => {
-            const topic = e.topics?.[0];
-            return e.type === 'contract' && (topic === 'bid' || topic === 'AAAABQAAAANiaWQAAAAA');
+          const bidEvents = events.filter((e) => {
+            const event = e as unknown as { topics?: string[]; type?: string };
+            const topic = event.topics?.[0];
+            return event.type === 'contract' && (topic === 'bid' || topic === 'AAAABQAAAANiaWQAAAAA');
           });
 
           if (bidEvents.length > 0) {
@@ -268,15 +269,18 @@ export default function Home() {
               }
 
               // Append to history
-              const newBids = bidEvents.map((e: { id: string; topics: string[]; value: string; transactionHash: string }) => ({
-                id: e.id,
-                bidder: e.topics[1] ? scValToNative(xdr.ScVal.fromXDR(e.topics[1], 'base64')) : 'Unknown',
-                amount: scValToNative(xdr.ScVal.fromXDR(e.value, 'base64')),
-                time: "Just now",
-                timestamp: Date.now(),
-                txHash: e.transactionHash,
-                rank: 1
-              }));
+              const newBids = bidEvents.map((e) => {
+                const event = e as unknown as { id: string; topics: string[]; value: string; txHash?: string; transactionHash?: string };
+                return {
+                  id: event.id,
+                  bidder: event.topics[1] ? scValToNative(xdr.ScVal.fromXDR(event.topics[1], 'base64')) : 'Unknown',
+                  amount: scValToNative(xdr.ScVal.fromXDR(event.value, 'base64')),
+                  time: "Just now",
+                  timestamp: Date.now(),
+                  txHash: event.txHash || event.transactionHash || "",
+                  rank: 1
+                };
+              });
 
               setHistory(prev => {
                 const existingHashes = new Set(prev.map(b => b.txHash));
