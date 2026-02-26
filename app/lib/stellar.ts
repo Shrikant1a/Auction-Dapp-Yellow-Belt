@@ -145,23 +145,52 @@ export async function connectWallet() {
   }
 
   // 2. Generic Stellar Check (xBull, Hana, etc.)
-  if (stellar && !stellar.isFreighter) {
-    try {
-      console.log("Detecting Generic Stellar Wallet (xBull/Hana)...");
-      const publicKey = typeof stellar.getPublicKey === 'function'
-        ? await stellar.getPublicKey()
-        : typeof stellar.publicKey === 'function'
-          ? await stellar.publicKey()
-          : null;
+  // if (typeof window !== "undefined" && (window as any).stellar && !(window as any).stellar.isFreighter) {
+  //   try {
+  //     console.log("Detecting Generic Stellar Wallet (xBull/Hana)...");
+  //     const publicKey = typeof stellar.getPublicKey === 'function'
+  //       ? await stellar.getPublicKey()
+  //       : typeof stellar.publicKey === 'function'
+  //         ? await stellar.publicKey()
+  //         : null;
 
-      if (publicKey) {
-        const addr = typeof publicKey === 'object' ? publicKey.publicKey || publicKey.pubkey : publicKey;
-        if (addr) return addr;
+  //     if (publicKey) {
+  //       const addr = typeof publicKey === 'object' ? publicKey.publicKey || publicKey.pubkey : publicKey;
+  //       if (addr) return addr;
+  //     }
+  //   } catch (e) {
+  //     console.error("Generic Wallet Error:", e);
+  //   }
+  // }
+  // 2. Generic Stellar Check (xBull, Hana, etc.)
+  if (typeof window !== "undefined") {
+    const stellar = (window as any).stellar;
+
+    if (stellar && !stellar.isFreighter) {
+      try {
+        console.log("Detecting Generic Stellar Wallet (xBull/Hana)...");
+
+        const publicKey =
+          typeof stellar.getPublicKey === "function"
+            ? await stellar.getPublicKey()
+            : typeof stellar.publicKey === "function"
+              ? await stellar.publicKey()
+              : null;
+
+        if (publicKey) {
+          const addr =
+            typeof publicKey === "object"
+              ? publicKey.publicKey || publicKey.pubkey
+              : publicKey;
+
+          if (addr) return addr;
+        }
+      } catch (e) {
+        console.error("Generic Wallet Error:", e);
       }
-    } catch (e) {
-      console.error("Generic Wallet Error:", e);
     }
   }
+
 
   // 3. Albedo
   // @ts-expect-error
