@@ -21,11 +21,13 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install frontend dependencies
+        run: |
+          npm install
 
-      - name: Build project
-        run: npm run build
+      - name: Build frontend
+        run: |
+          npm run build
 
   rust-build:
     name: Build Rust Smart Contract
@@ -35,12 +37,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Rust
+      - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
 
       - name: Build Rust contract
-  run: |
-    cd contracts/auction_contract
-    cargo build --verbose
+        run: |
+          cd contracts/auction_contract
+          cargo build --verbose
