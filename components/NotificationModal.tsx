@@ -80,7 +80,7 @@ export default function NotificationModal({ isOpen, onClose, notifications, onMa
                                 ) : (
                                     notifications.map((notification, idx) => (
                                         <motion.div
-                                            key={notification.id}
+                                            key={`${notification.id}-${idx}`}
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: idx * 0.05 }}
@@ -88,9 +88,9 @@ export default function NotificationModal({ isOpen, onClose, notifications, onMa
                                             className={`relative flex items-start space-x-4 p-4 rounded-2xl transition-all border ${notification.read ? 'bg-white/5 border-transparent opacity-60' : 'bg-orange-primary/10 border-orange-primary/20'}`}
                                         >
                                             <div className={`p-2 rounded-lg ${notification.type === 'outbid' ? 'bg-red-500/20 text-red-500' :
-                                                    notification.type === 'success' ? 'bg-green-500/20 text-green-500' :
-                                                        notification.type === 'bid' ? 'bg-orange-primary/20 text-orange-primary' :
-                                                            'bg-blue-500/20 text-blue-500'
+                                                notification.type === 'success' ? 'bg-green-500/20 text-green-500' :
+                                                    notification.type === 'bid' ? 'bg-orange-primary/20 text-orange-primary' :
+                                                        'bg-blue-500/20 text-blue-500'
                                                 }`}>
                                                 {notification.type === 'outbid' ? <AlertCircle size={14} /> :
                                                     notification.type === 'success' ? <CheckCircle2 size={14} /> :

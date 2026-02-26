@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Extracted Components
 import Navbar from "@/components/Navbar";
@@ -12,6 +13,8 @@ import BidHistory from "@/components/BidHistory";
 import Hero from "@/components/Hero";
 import SearchSection from "@/components/SearchSection";
 import Features from "@/components/Features";
+import Membership from "@/components/Membership";
+import BuyNIPL from "@/components/BuyNIPL";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 
@@ -21,6 +24,34 @@ import { placeBidOnChain, getRecentEvents, getAuctionState } from "@/app/lib/ste
 import CreateAuctionModal from "@/components/CreateAuctionModal";
 import UserActivityModal from "@/components/UserActivityModal";
 import NotificationModal, { Notification } from "@/components/NotificationModal";
+
+interface Unit {
+  id: string;
+  name: string;
+  brand: string;
+  model: string;
+  year: string;
+  type: string;
+  transmission: string;
+  location: string;
+  price: number;
+  image: string;
+}
+
+const MOCK_UNITS: Unit[] = [
+  { id: '1', name: 'Ferrari SF90 Stradale', brand: 'Ferrari', model: 'SF90', year: '2024', type: 'Coupe', transmission: 'Automatic', location: 'Europe, Italy', price: 550000, image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=600' },
+  { id: '2', name: 'Lamborghini Revuelto', brand: 'Lamborghini', model: 'Revuelto', year: '2024', type: 'Coupe', transmission: 'Automatic', location: 'Middle East, Dubai', price: 600000, image: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80&w=600' },
+  { id: '2-1', name: 'Lamborghini Aventador LP780-4', brand: 'Lamborghini', model: 'Aventador', year: '2024', type: 'Spider', transmission: 'Manual', location: 'Europe, Monaco', price: 580000, image: 'https://images.unsplash.com/photo-1621135802920-133df287f89c?auto=format&fit=crop&q=80&w=600' },
+  { id: '3', name: 'Porsche 911 GT3 RS', brand: 'Porsche', model: '911 GT3', year: '2023', type: 'Coupe', transmission: 'Paddleshift', location: 'Europe, Germany', price: 280000, image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=600' },
+  { id: '4', name: 'McLaren Artura', brand: 'McLaren', model: 'Artura', year: '2023', type: 'Spider', transmission: 'Automatic', location: 'Europe, UK', price: 230000, image: 'https://images.unsplash.com/photo-1621135802920-133df287f89c?auto=format&fit=crop&q=80&w=600' },
+  { id: '5', name: 'Bugatti Mistral', brand: 'Bugatti', model: 'Mistral', year: '2024', type: 'Convertible', transmission: 'Automatic', location: 'Europe, France', price: 5000000, image: 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&q=80&w=600' },
+  { id: '6', name: 'Koenigsegg Jesko', brand: 'Koenigsegg', model: 'Jesko', year: '2024', type: 'Hypercar', transmission: 'Automatic', location: 'Europe, Sweden', price: 3000000, image: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=600' },
+  { id: '7', name: 'Pagani Utopia', brand: 'Pagani', model: 'Utopia', year: '2024', type: 'Hypercar', transmission: 'Manual', location: 'Europe, Italy', price: 2500000, image: 'https://images.unsplash.com/photo-1542362567-b04ecd735951?auto=format&fit=crop&q=80&w=600' },
+  { id: '8', name: 'Rimac Nevera', brand: 'Rimac', model: 'Nevera', year: '2024', type: 'Hypercar', transmission: 'Single Speed', location: 'Europe, Croatia', price: 2100000, image: 'https://images.unsplash.com/photo-1526726538690-5cbf95642cb0?auto=format&fit=crop&q=80&w=600' },
+  { id: '9', name: 'Aston Martin Valkyrie', brand: 'Aston Martin', model: 'Valkyrie', year: '2024', type: 'Track Only', transmission: 'Paddleshift', location: 'Middle East, Abu Dhabi', price: 3500000, image: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&q=80&w=600' },
+  { id: '10', name: 'Porsche Mission X', brand: 'Porsche', model: 'Mission X', year: '2024', type: 'Hypercar', transmission: 'Single Speed', location: 'North America, USA', price: 2500000, image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=600' },
+  { id: '11', name: 'Lamborghini Aventador SVJ', brand: 'Lamborghini', model: 'Aventador', year: '2022', type: 'Coupe', transmission: 'Automatic', location: 'Asia, Japan', price: 520000, image: 'https://images.unsplash.com/photo-1514316454349-750a7fd3da3a?auto=format&fit=crop&q=80&w=600' },
+];
 
 export default function Home() {
   const [address, setAddress] = useState<string | null>(null);
@@ -42,6 +73,8 @@ export default function Home() {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [searchResults, setSearchResults] = useState<Unit[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [auctionData, setAuctionData] = useState({
     name: "Aero Precision",
     details: "The Ferrari 488 Pista. A masterpiece of aerodynamic engineering and raw power. This specific unit is tracked on the Stellar blockchain, ensuring an immutable record of ownership and service history.",
@@ -66,14 +99,39 @@ export default function Home() {
     setTimeout(() => setTxStatus(null), 5000);
   };
 
+  const handleUnitClick = (unit: Unit) => {
+    setIsDemoMode(true);
+    setHighestBid(unit.price / 100); // Set starting price as 1% of value for demo
+    setTimeLeft(86400); // Reset timer
+    setAuctionData({
+      name: unit.name,
+      details: `${unit.name}. A ${unit.year} ${unit.brand} ${unit.model} featuring a ${unit.transmission} transmission. Located in ${unit.location}. This unit is now live for bidding in our premium digital showcase.`,
+      image: unit.image
+    });
+    setHistory([]);
+    setIsEnded(false);
+    setIsOutbid(false);
+    setTxStatus(`Loading auction for ${unit.name}...`);
+
+    // Clear search results after selection
+    setSearchResults([]);
+
+    // Smooth scroll to auctions
+    setTimeout(() => {
+      document.getElementById('live-auctions')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+
+    setTimeout(() => setTxStatus(null), 3000);
+  };
+
   // Audio Cues for Outbid
   useEffect(() => {
     if (isOutbid && typeof window !== 'undefined') {
       // Add notification
-      const id = `outbid-${Date.now()}`;
+      const id = `outbid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       setNotifications(prev => [{
         id,
-        type: 'outbid',
+        type: 'outbid' as const,
         message: "You've been outbid! Place a higher bid to stay in the race.",
         time: "Just now",
         timestamp: Date.now(),
@@ -193,9 +251,18 @@ export default function Home() {
                 // Add notification for new bids if not from user
                 uniqueNewBids.forEach(bid => {
                   if (bid.bidder !== address) {
+                    // setNotifications(p => [{
+                    //   id: `bid-${bid.id}-${Date.now()}`,
+                    //   type: 'bid' as const,
+                    //   message: `New bid of ${bid.amount} XLM placed by ${bid.bidder.slice(0, 4)}...${bid.bidder.slice(-4)}`,
+                    //   time: "Just now",
+                    //   timestamp: Date.now(),
+                    //   txHash: bid.txHash,
+                    //   read: false
+                    // }, ...p].slice(0, 20));
                     setNotifications(p => [{
-                      id: `bid-${bid.id}-${Date.now()}`,
-                      type: 'bid',
+                      id: `bid-${bid.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                      type: 'bid' as const,
                       message: `New bid of ${bid.amount} XLM placed by ${bid.bidder.slice(0, 4)}...${bid.bidder.slice(-4)}`,
                       time: "Just now",
                       timestamp: Date.now(),
@@ -242,6 +309,7 @@ export default function Home() {
 
         setHighestBid(newBidAmount);
         setIsOutbid(true);
+
         setHistory(prev => {
           const botBid = {
             id: Date.now(),
@@ -252,18 +320,17 @@ export default function Home() {
             txHash: `sim_${Math.random().toString(36).slice(2, 10)}`,
             rank: 1
           };
-
-          setNotifications(p => [{
-            id: `sim-bid-${Date.now()}`,
-            type: 'outbid',
-            message: `OUTBID! ${randomOpponent} just placed a bid of ${newBidAmount} XLM`,
-            time: "Just now",
-            timestamp: Date.now(),
-            read: false
-          }, ...p].slice(0, 20));
-
           return [botBid, ...prev.map(b => ({ ...b, rank: b.rank + 1 }))].slice(0, 15);
         });
+
+        setNotifications(p => [{
+          id: `sim-bid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          type: 'outbid' as const,
+          message: `OUTBID! ${randomOpponent} just placed a bid of ${newBidAmount} XLM`,
+          time: "Just now",
+          timestamp: Date.now(),
+          read: false
+        }, ...p].slice(0, 20));
       }, delay);
 
       return () => clearTimeout(timer);
@@ -332,19 +399,20 @@ export default function Home() {
           txHash,
           rank: 1
         };
-        setNotifications(p => [{
-          id: `user-bid-${Date.now()}`,
-          type: 'success',
-          message: `Success! Your bid of ${amount} XLM has been secured.`,
-          time: "Just now",
-          timestamp: Date.now(),
-          txHash,
-          read: true
-        }, ...p].slice(0, 20));
 
         const filtered = prev.filter(b => b.txHash !== txHash);
         return [newBid, ...filtered.map(b => ({ ...b, rank: b.rank + 1 }))].slice(0, 10);
       });
+
+      setNotifications(p => [{
+        id: `user-bid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: 'success' as const,
+        message: `Success! Your bid of ${amount} XLM has been secured.`,
+        time: "Just now",
+        timestamp: Date.now(),
+        txHash,
+        read: true
+      }, ...p].slice(0, 20));
 
       if (!isDemoMode) {
         // SYNC
@@ -407,7 +475,133 @@ export default function Home() {
 
         <Hero />
 
-        <SearchSection />
+        <SearchSection onSearch={(filters) => {
+          console.log("Filtering with:", filters);
+          setIsSearching(true);
+          setTxStatus("Analyzing dealership inventory...");
+
+          const { searchTerm, activeFilters } = filters;
+
+          let filtered = MOCK_UNITS.filter(unit => {
+            const matchesSearch = !searchTerm ||
+              unit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              unit.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              unit.model.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesBrand = !activeFilters.Brand || unit.brand === activeFilters.Brand;
+            const matchesYear = !activeFilters.Year || unit.year === activeFilters.Year;
+            const matchesModel = !activeFilters.Model || unit.model === activeFilters.Model;
+            const matchesType = !activeFilters.Type || unit.type === activeFilters.Type;
+            const matchesTransmission = !activeFilters.Transmission || unit.transmission === activeFilters.Transmission;
+            const matchesLocation = !activeFilters.Location || activeFilters.Location === 'Global Delivery' || unit.location.includes(activeFilters.Location);
+
+            return matchesSearch && matchesBrand && matchesYear && matchesModel && matchesType && matchesTransmission && matchesLocation;
+          });
+
+          // Fallback if no exact match: Try to match just Brand or Model to at least show something relevant
+          if (filtered.length === 0 && (activeFilters.Brand || activeFilters.Model || searchTerm)) {
+            filtered = MOCK_UNITS.filter(unit => {
+              const matchesBrand = activeFilters.Brand ? unit.brand === activeFilters.Brand : false;
+              const matchesModel = activeFilters.Model ? unit.model === activeFilters.Model : false;
+              const matchesSearch = searchTerm ? unit.name.toLowerCase().includes(searchTerm.toLowerCase()) : false;
+              return matchesBrand || matchesModel || matchesSearch;
+            }).slice(0, 4); // Limit recommendations
+          }
+
+          setTimeout(() => {
+            setSearchResults(filtered);
+            setIsSearching(false);
+            if (filtered.length > 0) {
+              setTxStatus(`Success! Found ${filtered.length} matching units.`);
+            } else {
+              setTxStatus("No direct matches. Browse our premium collection below.");
+              // If still no results, show all as a default
+              setSearchResults(MOCK_UNITS.slice(0, 4));
+            }
+            setTimeout(() => setTxStatus(null), 3000);
+          }, 1500);
+        }} />
+
+        {/* Search Results Display Section */}
+        <AnimatePresence>
+          {(searchResults.length > 0 || isSearching) && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-6 pt-10"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center text-orange-primary text-sm italic font-black">R</span>
+                  {isSearching ? 'Curating Results...' : `Search Results (${searchResults.length})`}
+                </h3>
+                {!isSearching && (
+                  <button
+                    onClick={() => setSearchResults([])}
+                    className="text-xs text-gray-500 hover:text-white transition-colors uppercase tracking-widest font-bold"
+                  >
+                    Clear Search
+                  </button>
+                )}
+              </div>
+
+              {isSearching ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="bg-white/5 rounded-3xl h-[300px] animate-pulse relative overflow-hidden">
+                      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/50 to-transparent" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {searchResults.map((unit) => (
+                    <motion.div
+                      key={unit.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      whileHover={{ y: -5 }}
+                      onClick={() => handleUnitClick(unit)}
+                      className="group bg-dark-card/40 border border-white/5 rounded-3xl overflow-hidden hover:border-orange-primary/30 transition-all cursor-pointer"
+                    >
+                      <div className="aspect-[4/3] relative overflow-hidden">
+                        <img
+                          src={unit.image}
+                          alt={unit.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+                        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                          <span className="text-orange-primary font-black text-xs">{unit.year}</span>
+                        </div>
+                      </div>
+                      <div className="p-6 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{unit.brand}</p>
+                            <h4 className="text-lg font-bold group-hover:text-orange-primary transition-colors">{unit.model}</h4>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-orange-primary font-black text-lg">${unit.price.toLocaleString()}</p>
+                            <p className="text-[10px] text-gray-500 font-bold uppercase">Estimated Value</p>
+                          </div>
+                        </div>
+                        <div className="pt-4 flex items-center justify-between border-t border-white/5 text-[10px] text-gray-500 font-bold uppercase">
+                          <span>{unit.type}</span>
+                          <span className="w-1 h-1 rounded-full bg-orange-primary/30" />
+                          <span>{unit.transmission}</span>
+                          <span className="w-1 h-1 rounded-full bg-orange-primary/30" />
+                          <span>{unit.location.split(',')[0]}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="flex items-center justify-between bg-orange-primary/5 border border-orange-primary/20 p-4 rounded-2xl">
           <div className="flex items-center space-x-3">
@@ -423,6 +617,10 @@ export default function Home() {
         </div>
 
         <Features />
+
+        <Membership />
+
+        <BuyNIPL />
 
         <FAQ />
 

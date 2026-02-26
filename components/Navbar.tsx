@@ -16,9 +16,9 @@ interface NavbarProps {
 export default function Navbar({ address, setAddress, setKit, setWalletName, onCartClick, onNotificationClick, hasUnread }: NavbarProps) {
     const navLinks = [
         { name: "Dashboard", id: "live-auctions", active: true },
-        { name: "Catalog", id: "live-auctions", active: false },
-        { name: "Membership", id: "learn-more", active: false },
-        { name: "Buy NIPL", id: "live-auctions", active: false },
+        { name: "Catalog", id: "search-section", active: false },
+        { name: "Membership", id: "membership", active: false },
+        { name: "Buy NIPL", id: "buy-nipl", active: false },
         { name: "FAQ's", id: "faq", active: false },
         { name: "Contact Us", id: "faq", active: false },
     ];

@@ -1,5 +1,32 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, Symbol};
+use soroban_sdk::{contract, contractimpl, contractinterface, contracttype, symbol_short, Address, Env, Symbol, String};
+
+#[contractinterface]
+pub trait TokenInterface {
+    fn transfer(env: Env, from: Address, to: Address, amount: i128);
+    fn balance(env: Env, id: Address) -> i128;
+}
+
+struct TokenClient<'a> {
+    env: Env,
+    address: Address,
+}
+
+impl<'a> TokenClient<'a> {
+    fn new(env: &Env, address: &Address) -> Self {
+        Self {
+            env: env.clone(),
+            address: address.clone(),
+        }
+    }
+    fn transfer(&self, from: &Address, to: &Address, amount: &i128) {
+        self.env.invoke_contract::<()>(
+            &self.address,
+            &Symbol::new(&self.env, "transfer"),
+            (from.clone(), to.clone(), *amount).into_val(&self.env),
+        );
+    }
+}
 
 #[contracttype]
 #[derive(Clone)]
@@ -18,6 +45,7 @@ pub struct AuctionData {
     pub finalized: bool,
     pub extension_window: u64,
     pub extension_duration: u64,
+    pub token_address: Address, // Inter-contract call target
 }
 
 #[contract]
@@ -33,6 +61,7 @@ impl AuctionContract {
         duration_secs: u64,
         extension_window: u64,
         extension_duration: u64,
+        token_address: Address,
     ) {
         if env.storage().instance().has(&DataKey::AuctionData) {
             panic!("Auction already initialized");
@@ -47,6 +76,7 @@ impl AuctionContract {
             finalized: false,
             extension_window,
             extension_duration,
+            token_address,
         };
 
         env.storage().instance().set(&DataKey::AuctionData, &auction_data);
@@ -71,6 +101,18 @@ impl AuctionContract {
 
         if amount < auction_data.highest_bid + auction_data.min_increment {
             panic!("Bid amount too low");
+        }
+
+        // INTER-CONTRACT CALL: Transfer NIPL tokens
+        // We assume the token contract has a 'transfer' method: transfer(from, to, amount)
+        let token_client = TokenClient::new(&env, &auction_data.token_address);
+        
+        // 1. Transfer new bid to this contract (Escrow)
+        token_client.transfer(&bidder, &env.current_contract_address(), &amount);
+
+        // 2. Refund previous bidder (if not owner)
+        if auction_data.highest_bidder != auction_data.owner {
+            token_client.transfer(&env.current_contract_address(), &auction_data.highest_bidder, &auction_data.highest_bid);
         }
 
         // Anti-Sniping Logic
