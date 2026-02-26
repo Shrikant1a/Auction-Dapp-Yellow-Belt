@@ -39,7 +39,12 @@ export default function BuyNIPL() {
 
                     <div className="space-y-4">
                         <div className="bg-white/5 rounded-2xl p-4 flex justify-between items-center border border-white/5">
-                            <input type="number" placeholder="0.00" className="bg-transparent border-none outline-none text-2xl font-bold w-full" />
+                            <input
+                                suppressHydrationWarning
+                                type="number"
+                                placeholder="0.00"
+                                className="bg-transparent border-none outline-none text-2xl font-bold w-full"
+                            />
                             <span className="font-black text-gray-500 ml-4 italic">XLM</span>
                         </div>
                         <div className="flex justify-center -my-2 relative z-20">
@@ -48,12 +53,21 @@ export default function BuyNIPL() {
                             </div>
                         </div>
                         <div className="bg-white/5 rounded-2xl p-4 flex justify-between items-center border border-white/5">
-                            <input type="number" placeholder="0" className="bg-transparent border-none outline-none text-2xl font-bold w-full" readOnly />
+                            <input
+                                suppressHydrationWarning
+                                type="number"
+                                placeholder="0"
+                                className="bg-transparent border-none outline-none text-2xl font-bold w-full"
+                                readOnly
+                            />
                             <span className="font-black text-orange-primary ml-4 italic">NIPL</span>
                         </div>
                     </div>
 
-                    <button className="w-full bg-orange-primary hover:bg-orange-secondary text-black py-5 rounded-3xl font-black uppercase tracking-tighter transition-all hover:scale-[1.02] shadow-[0_10px_30px_rgba(255,159,10,0.2)]">
+                    <button
+                        suppressHydrationWarning
+                        className="w-full bg-orange-primary hover:bg-orange-secondary text-black py-5 rounded-3xl font-black uppercase tracking-tighter transition-all hover:scale-[1.02] shadow-[0_10px_30px_rgba(255,159,10,0.2)]"
+                    >
                         Swap Now
                     </button>
                 </div>

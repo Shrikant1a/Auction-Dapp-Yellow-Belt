@@ -59,6 +59,7 @@ export default function Navbar({ address, setAddress, setKit, setWalletName, onC
                 className="flex items-center space-x-6"
             >
                 <button
+                    suppressHydrationWarning
                     onClick={() => (window as any).openCreateAuction?.()}
                     className="hidden md:flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full text-xs font-bold hover:bg-white/10 transition-all text-orange-primary"
                 >
@@ -68,12 +69,14 @@ export default function Navbar({ address, setAddress, setKit, setWalletName, onC
 
                 <div className="flex items-center space-x-4 text-gray-400">
                     <button
+                        suppressHydrationWarning
                         onClick={onCartClick}
                         className="hover:text-white transition-colors"
                     >
                         <ShoppingCart size={20} />
                     </button>
                     <button
+                        suppressHydrationWarning
                         onClick={onNotificationClick}
                         className="hover:text-white transition-colors relative"
                     >
@@ -86,6 +89,7 @@ export default function Navbar({ address, setAddress, setKit, setWalletName, onC
 
                 {address ? (
                     <button
+                        suppressHydrationWarning
                         onClick={() => {
                             setAddress(null);
                             setKit(null);

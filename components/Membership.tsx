@@ -54,7 +54,10 @@ export default function Membership() {
                                 </li>
                             ))}
                         </ul>
-                        <button className={`w-full py-4 rounded-2xl font-bold transition-all ${tier.highlight ? 'bg-orange-primary text-black hover:bg-orange-secondary' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                        <button
+                            suppressHydrationWarning
+                            className={`w-full py-4 rounded-2xl font-bold transition-all ${tier.highlight ? 'bg-orange-primary text-black hover:bg-orange-secondary' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                        >
                             Choose {tier.name}
                         </button>
                     </motion.div>

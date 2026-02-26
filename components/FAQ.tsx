@@ -43,6 +43,7 @@ export default function FAQ() {
                             className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all hover:border-orange-primary/30"
                         >
                             <button
+                                suppressHydrationWarning
                                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
                                 className="w-full flex items-center justify-between p-6 text-left"
                             >

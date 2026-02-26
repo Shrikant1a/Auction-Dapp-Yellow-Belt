@@ -85,6 +85,7 @@ export default function SearchSection({ onSearch }: SearchSectionProps) {
                     <div className="lg:col-span-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 flex items-center space-x-2 focus-within:border-orange-primary/50 transition-colors">
                         <Search size={18} className="text-gray-400" />
                         <input
+                            suppressHydrationWarning
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -160,6 +161,7 @@ export default function SearchSection({ onSearch }: SearchSectionProps) {
                     </div>
 
                     <button
+                        suppressHydrationWarning
                         onClick={handleSearch}
                         className="w-full lg:w-auto bg-orange-primary hover:bg-orange-secondary text-black px-12 py-5 rounded-full font-black text-sm uppercase tracking-tighter transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_10px_30px_rgba(255,159,10,0.3)] shadow-orange-primary/10"
                     >

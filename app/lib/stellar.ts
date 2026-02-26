@@ -193,12 +193,10 @@ export async function connectWallet() {
 
 
   // 3. Albedo
-  // @ts-expect-error
-  if (window.albedo) {
+  if (typeof window !== 'undefined' && (window as any).albedo) {
     try {
       console.log("Detecting Albedo...");
-      // @ts-expect-error
-      const res = await window.albedo.publicKey({});
+      const res = await (window as any).albedo.publicKey({});
       return res.pubkey;
     } catch (e) {
       console.error("Albedo Error:", e);

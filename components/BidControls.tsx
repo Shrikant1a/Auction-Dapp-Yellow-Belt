@@ -126,6 +126,7 @@ export default function BidControls({
                                 <p className="text-white/60 text-sm mt-1">Winner: {winner}</p>
                             </div>
                             <button
+                                suppressHydrationWarning
                                 onClick={() => (window as any).openCreateAuction?.()}
                                 className="w-full bg-white/5 border border-white/10 text-white py-4 rounded-2xl font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center space-x-2"
                             >
