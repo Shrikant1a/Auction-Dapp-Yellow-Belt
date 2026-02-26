@@ -204,9 +204,9 @@ export async function connectWallet() {
       console.error("Albedo Error:", e);
     }
   }
-}
 
-throw new Error("No Stellar wallet detected. 1. Unlock your extension 2. Refresh the page 3. Ensure this site is allowed in settings.");
+  throw new Error("No Stellar wallet detected. 1. Unlock your extension 2. Refresh the page 3. Ensure this site is allowed in settings.");
+}
 
 
 export async function signTransaction(xdr: string) {
