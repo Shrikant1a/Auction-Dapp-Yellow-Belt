@@ -36,8 +36,9 @@ export default function WalletConnect({ setAddress, setKit, setWalletName, class
                     setWalletName(option.name);
                 }
             });
-        } catch (e: any) {
-            alert(e.message || "Connection failed.");
+        } catch (err: unknown) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            alert(errorMsg || "Connection failed.");
         }
     }
 

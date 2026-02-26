@@ -4,10 +4,18 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { PlusCircle, Info, Camera, Image as ImageIcon, X } from 'lucide-react';
 
+export interface AuctionFormData {
+    name: string;
+    startingPrice: number;
+    duration: number;
+    details: string;
+    image: string;
+}
+
 interface CreateAuctionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: any) => void;
+    onSubmit: (data: AuctionFormData) => void;
 }
 
 export default function CreateAuctionModal({ isOpen, onClose, onSubmit }: CreateAuctionModalProps) {

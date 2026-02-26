@@ -127,7 +127,7 @@ export default function BidControls({
                             </div>
                             <button
                                 suppressHydrationWarning
-                                onClick={() => (window as any).openCreateAuction?.()}
+                                onClick={() => (window as typeof window & { openCreateAuction?: () => void }).openCreateAuction?.()}
                                 className="w-full bg-white/5 border border-white/10 text-white py-4 rounded-2xl font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center space-x-2"
                             >
                                 <PlusCircle className="text-orange-primary" size={20} />

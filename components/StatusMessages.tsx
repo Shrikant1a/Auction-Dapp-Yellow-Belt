@@ -73,7 +73,7 @@ export default function StatusMessages({ error, txStatus, isOutbid }: StatusMess
                                 <Bell size={20} fill="currentColor" />
                             </div>
                             <div>
-                                <p className="font-black text-lg tracking-tight leading-none uppercase">You've been outbid!</p>
+                                <p className="font-black text-lg tracking-tight leading-none uppercase">You&apos;ve been outbid!</p>
                                 <p className="text-white/60 text-xs font-bold mt-1 uppercase tracking-widest leading-none">Reclaim your lead instantly</p>
                             </div>
                         </motion.div>

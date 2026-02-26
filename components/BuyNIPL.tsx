@@ -13,7 +13,7 @@ export default function BuyNIPL() {
                     <span className="bg-orange-primary/20 text-orange-primary px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest">Platform Utility Token</span>
                     <h2 className="text-5xl font-black leading-tight">Secure Your <span className="text-orange-primary">$NIPL</span> Tokens</h2>
                     <p className="text-gray-400 text-lg leading-relaxed">
-                        The NIPL token is the core of the EaseAuction ecosystem. Use it for bidding, governance, and exclusive access to the world's most rare supercars.
+                        The NIPL token is the core of the EaseAuction ecosystem. Use it for bidding, governance, and exclusive access to the world&apos;s most rare supercars.
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">

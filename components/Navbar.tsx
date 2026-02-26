@@ -60,7 +60,7 @@ export default function Navbar({ address, setAddress, setKit, setWalletName, onC
             >
                 <button
                     suppressHydrationWarning
-                    onClick={() => (window as any).openCreateAuction?.()}
+                    onClick={() => (window as typeof window & { openCreateAuction?: () => void }).openCreateAuction?.()}
                     className="hidden md:flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full text-xs font-bold hover:bg-white/10 transition-all text-orange-primary"
                 >
                     <PlusCircle size={16} />
