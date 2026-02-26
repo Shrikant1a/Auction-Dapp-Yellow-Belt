@@ -11,7 +11,7 @@ struct TokenClient {
     address: Address,
 }
 
-impl<'a> TokenClient<'a> {
+impl TokenClient {
     fn new(env: &Env, address: &Address) -> Self {
         Self {
             env: env.clone(),
