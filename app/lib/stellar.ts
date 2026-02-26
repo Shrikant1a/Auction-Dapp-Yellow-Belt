@@ -127,48 +127,57 @@ export async function connectWallet() {
         console.log("Freighter getPublicKey result:", publicKey);
 
         if (publicKey) return typeof publicKey === 'string' ? publicKey : publicKey.publicKey;
+        // } catch (e: unknown) {
+        //   console.error("Freighter API Error:", e);
+        //   if (e.message?.includes("User declined") || e.status === "denied") {
+        //     throw new Error("Connection denied by user. Please unlock your wallet and try again.");
+        //   }
       } catch (e: unknown) {
         console.error("Freighter API Error:", e);
-        if (e.message?.includes("User declined") || e.status === "denied") {
-          throw new Error("Connection denied by user. Please unlock your wallet and try again.");
+
+        if (e instanceof Error) {
+          if (e.message.includes("User declined")) {
+            throw new Error("Connection denied by user. Please unlock your wallet and try again.");
+          }
         }
-      }
-    }
-
-    // 2. Generic Stellar Check (xBull, Hana, etc.)
-    if (stellar && !stellar.isFreighter) {
-      try {
-        console.log("Detecting Generic Stellar Wallet (xBull/Hana)...");
-        const publicKey = typeof stellar.getPublicKey === 'function'
-          ? await stellar.getPublicKey()
-          : typeof stellar.publicKey === 'function'
-            ? await stellar.publicKey()
-            : null;
-
-        if (publicKey) {
-          const addr = typeof publicKey === 'object' ? publicKey.publicKey || publicKey.pubkey : publicKey;
-          if (addr) return addr;
-        }
-      } catch (e) {
-        console.error("Generic Wallet Error:", e);
-      }
-    }
-
-    // 3. Albedo
-    // @ts-expect-error
-    if (window.albedo) {
-      try {
-        console.log("Detecting Albedo...");
-        // @ts-expect-error
-        const res = await window.albedo.publicKey({});
-        return res.pubkey;
-      } catch (e) {
-        console.error("Albedo Error:", e);
       }
     }
   }
 
-  throw new Error("No Stellar wallet detected. 1. Unlock your extension 2. Refresh the page 3. Ensure this site is allowed in settings.");
+  // 2. Generic Stellar Check (xBull, Hana, etc.)
+  if (stellar && !stellar.isFreighter) {
+    try {
+      console.log("Detecting Generic Stellar Wallet (xBull/Hana)...");
+      const publicKey = typeof stellar.getPublicKey === 'function'
+        ? await stellar.getPublicKey()
+        : typeof stellar.publicKey === 'function'
+          ? await stellar.publicKey()
+          : null;
+
+      if (publicKey) {
+        const addr = typeof publicKey === 'object' ? publicKey.publicKey || publicKey.pubkey : publicKey;
+        if (addr) return addr;
+      }
+    } catch (e) {
+      console.error("Generic Wallet Error:", e);
+    }
+  }
+
+  // 3. Albedo
+  // @ts-expect-error
+  if (window.albedo) {
+    try {
+      console.log("Detecting Albedo...");
+      // @ts-expect-error
+      const res = await window.albedo.publicKey({});
+      return res.pubkey;
+    } catch (e) {
+      console.error("Albedo Error:", e);
+    }
+  }
+}
+
+throw new Error("No Stellar wallet detected. 1. Unlock your extension 2. Refresh the page 3. Ensure this site is allowed in settings.");
 }
 
 export async function signTransaction(xdr: string) {
