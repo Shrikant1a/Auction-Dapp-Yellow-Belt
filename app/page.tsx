@@ -251,8 +251,8 @@ export default function Home() {
           const latestEvent = events[events.length - 1];
           setLastLedger(latestEvent.ledger + 1);
 
-          const bidEvents = events.filter(e => {
-            const topic = (e as any).topics?.[0];
+          const bidEvents = events.filter((e: { topics?: string[]; type?: string }) => {
+            const topic = e.topics?.[0];
             return e.type === 'contract' && (topic === 'bid' || topic === 'AAAABQAAAANiaWQAAAAA');
           });
 
@@ -268,7 +268,7 @@ export default function Home() {
               }
 
               // Append to history
-              const newBids = bidEvents.map((e: any) => ({
+              const newBids = bidEvents.map((e: { id: string; topics: string[]; value: string; transactionHash: string }) => ({
                 id: e.id,
                 bidder: e.topics[1] ? scValToNative(xdr.ScVal.fromXDR(e.topics[1], 'base64')) : 'Unknown',
                 amount: scValToNative(xdr.ScVal.fromXDR(e.value, 'base64')),
@@ -314,8 +314,9 @@ export default function Home() {
             }
           }
         }
-      } catch (e: any) {
-        console.error("Event polling error:", e?.message || e?.toString() || "Unknown Error");
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.error("Event polling error:", errorMsg);
       }
     };
 
@@ -470,9 +471,9 @@ export default function Home() {
       setBidAmount("");
       if (!isDemoMode) setTxStatus(`Confirmed (Hash: ${txHash.slice(0, 8)}...)`);
       setTimeout(() => setTxStatus(null), 5000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setTxStatus(null);
-      let errorMsg = err.message || "Unknown error";
+      let errorMsg = err instanceof Error ? err.message : String(err);
 
       if (errorMsg.includes("UnreachableCodeReached") || errorMsg.includes("InvalidAction")) {
         errorMsg = "Blockchain Error: The smart contract rejected this bid. The current real contract state is likely set to a much higher value (e.g. 1490 XLM) than the current local demo.";
@@ -485,8 +486,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    (window as any).openCreateAuction = () => setIsCreateModalOpen(true);
-    return () => { delete (window as any).openCreateAuction; };
+    (window as typeof window & { openCreateAuction?: () => void }).openCreateAuction = () => setIsCreateModalOpen(true);
+    return () => { delete (window as typeof window & { openCreateAuction?: () => void }).openCreateAuction; };
   }, []);
 
 

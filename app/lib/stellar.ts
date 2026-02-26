@@ -99,15 +99,30 @@ export async function getRecentEvents(startLedger?: number) {
 
 
 
+interface WalletAPI {
+  isFreighter?: boolean;
+  getPublicKey?: () => Promise<string | { publicKey: string }>;
+  publicKey?: (args?: unknown) => Promise<{ pubkey: string } | string>;
+  pubkey?: string;
+  isConnected?: () => Promise<boolean>;
+  signTransaction?: (xdr: string, options: { network: string }) => Promise<string | { signedXDR?: string; xdr?: string }>;
+}
+
+declare global {
+  interface Window {
+    freighterApi?: WalletAPI;
+    stellar?: WalletAPI;
+    albedo?: WalletAPI;
+  }
+}
+
 // Native Wallet Support (No library dependency)
 export async function connectWallet() {
   if (typeof window !== 'undefined') {
     console.log("Starting wallet detection...");
 
     // 1. Explicit Freighter Check
-    // @ts-ignore
     const freighter = window.freighterApi;
-    // @ts-ignore
     const stellar = window.stellar;
 
     const isFreighterAvailable = freighter || (stellar && stellar.isFreighter);
@@ -117,26 +132,20 @@ export async function connectWallet() {
         console.log("Found Freighter-compatible API");
         const api = freighter || stellar;
 
-        // Some versions of Freighter require checking isConnected first
-        if (typeof api.isConnected === 'function') {
+        if (api && typeof api.isConnected === 'function') {
           const connected = await api.isConnected();
           console.log("Freighter isConnected:", connected);
         }
 
-        const publicKey = await api.getPublicKey();
+        const publicKey = api && typeof api.getPublicKey === 'function' ? await api.getPublicKey() : null;
         console.log("Freighter getPublicKey result:", publicKey);
 
         if (publicKey) return typeof publicKey === 'string' ? publicKey : publicKey.publicKey;
-        // } catch (e: unknown) {
-        //   console.error("Freighter API Error:", e);
-        //   if (e.message?.includes("User declined") || e.status === "denied") {
-        //     throw new Error("Connection denied by user. Please unlock your wallet and try again.");
-        //   }
-      } catch (e: unknown) {
-        console.error("Freighter API Error:", e);
+      } catch (err: unknown) {
+        console.error("Freighter API Error:", err);
 
-        if (e instanceof Error) {
-          if (e.message.includes("User declined")) {
+        if (err instanceof Error) {
+          if (err.message.includes("User declined")) {
             throw new Error("Connection denied by user. Please unlock your wallet and try again.");
           }
         }
@@ -164,7 +173,7 @@ export async function connectWallet() {
   // }
   // 2. Generic Stellar Check (xBull, Hana, etc.)
   if (typeof window !== "undefined") {
-    const stellar = (window as any).stellar;
+    const stellar = window.stellar;
 
     if (stellar && !stellar.isFreighter) {
       try {
@@ -180,26 +189,28 @@ export async function connectWallet() {
         if (publicKey) {
           const addr =
             typeof publicKey === "object"
-              ? publicKey.publicKey || publicKey.pubkey
+              ? (publicKey as { publicKey?: string; pubkey?: string }).publicKey || (publicKey as { publicKey?: string; pubkey?: string }).pubkey
               : publicKey;
 
           if (addr) return addr;
         }
-      } catch (e) {
-        console.error("Generic Wallet Error:", e);
+      } catch (err: unknown) {
+        console.error("Generic Wallet Error:", err);
       }
     }
   }
 
 
   // 3. Albedo
-  if (typeof window !== 'undefined' && (window as any).albedo) {
+  if (typeof window !== 'undefined' && window.albedo) {
     try {
       console.log("Detecting Albedo...");
-      const res = await (window as any).albedo.publicKey({});
-      return res.pubkey;
-    } catch (e) {
-      console.error("Albedo Error:", e);
+      const res = typeof window.albedo.publicKey === 'function' ? await window.albedo.publicKey({}) : null;
+      if (res && typeof res !== 'string' && 'pubkey' in res) {
+        return res.pubkey;
+      }
+    } catch (err: unknown) {
+      console.error("Albedo Error:", err);
     }
   }
 
@@ -210,21 +221,19 @@ export async function connectWallet() {
 export async function signTransaction(xdr: string) {
   if (typeof window !== 'undefined') {
     // 1. Try Freighter
-    // @ts-expect-error
     const freighter = window.freighterApi;
-    if (freighter) {
+    if (freighter && typeof freighter.signTransaction === 'function') {
       try {
         const signedXDR = await freighter.signTransaction(xdr, {
           network: 'TESTNET',
         });
-        return signedXDR;
-      } catch (e) {
-        console.error("Freighter Sign Error:", e);
+        return typeof signedXDR === 'string' ? signedXDR : signedXDR.signedXDR || signedXDR.xdr || "";
+      } catch (err: unknown) {
+        console.error("Freighter Sign Error:", err);
       }
     }
 
     // 2. Try Generic Stellar (xBull, etc.)
-    // @ts-expect-error
     const genericStellar = window.stellar;
     if (genericStellar && typeof genericStellar.signTransaction === 'function') {
       try {
@@ -232,9 +241,12 @@ export async function signTransaction(xdr: string) {
           network: 'TESTNET',
         });
         // Handle if it returns {signedXDR: ...} or just string
-        return typeof result === 'object' ? result.signedXDR || result.xdr : result;
-      } catch (e) {
-        console.error("Generic Sign Error:", e);
+        if (typeof result === 'object' && result !== null) {
+          return (result as { signedXDR?: string; xdr?: string }).signedXDR || (result as { signedXDR?: string; xdr?: string }).xdr || "";
+        }
+        return result || "";
+      } catch (err: unknown) {
+        console.error("Generic Sign Error:", err);
       }
     }
   }
