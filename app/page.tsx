@@ -82,19 +82,55 @@ export default function Home() {
   });
 
   // New Auction Setup Logic
+  // const handleNewAuction = (data: unknown) => {
+  //   // Switch to Demo Mode for the new listing to avoid state mismatch with the real contract
+  //   setIsDemoMode(true);
+  //   setHighestBid(data.startingPrice || 100);
+  //   setTimeLeft((data.duration || 24) * 3600);
+  //   setAuctionData({
+  //     name: data.name || "Custom Supercar",
+  //     details: data.details || "A custom listed supercar on the Stellar network. Verified authenticity and performance specs.",
+  //     image: data.image || "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80&w=1000"
+  //   });
+  //   setIsEnded(false);
+  //   setHistory([]);
+  //   setIsOutbid(false);
+  //   setTxStatus("New Local Auction Launched! (Demo Mode Active)");
+  //   setTimeout(() => setTxStatus(null), 5000);
+  // };
+
+  //New Auction Setup Logic 2 
+  type AuctionFormData = {
+    startingPrice?: number;
+    duration?: number;
+    name?: string;
+    details?: string;
+    image?: string;
+  };
+
   const handleNewAuction = (data: unknown) => {
-    // Switch to Demo Mode for the new listing to avoid state mismatch with the real contract
+    const auction = data as AuctionFormData;
+
+    // Switch to Demo Mode for the new listing
     setIsDemoMode(true);
-    setHighestBid(data.startingPrice || 100);
-    setTimeLeft((data.duration || 24) * 3600);
+
+    setHighestBid(auction.startingPrice || 100);
+    setTimeLeft((auction.duration || 24) * 3600);
+
     setAuctionData({
-      name: data.name || "Custom Supercar",
-      details: data.details || "A custom listed supercar on the Stellar network. Verified authenticity and performance specs.",
-      image: data.image || "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80&w=1000"
+      name: auction.name || "Custom Supercar",
+      details:
+        auction.details ||
+        "A custom listed supercar on the Stellar network. Verified authenticity and performance specs.",
+      image:
+        auction.image ||
+        "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&q=80&w=1000",
     });
+
     setIsEnded(false);
     setHistory([]);
     setIsOutbid(false);
+
     setTxStatus("New Local Auction Launched! (Demo Mode Active)");
     setTimeout(() => setTxStatus(null), 5000);
   };
