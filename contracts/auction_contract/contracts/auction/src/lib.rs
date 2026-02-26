@@ -1,6 +1,6 @@
 #![no_std]
 use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, Symbol, IntoVal};
-#[contractinterface]
+// #[contractinterface]
 pub trait TokenInterface {
     fn transfer(env: Env, from: Address, to: Address, amount: i128);
     fn balance(env: Env, id: Address) -> i128;
