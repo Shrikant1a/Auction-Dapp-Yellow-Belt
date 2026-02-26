@@ -2,7 +2,7 @@
 
 A high-end, real-time auction platform built on the **Stellar Network** using **Soroban Smart Contracts**. AuraAuction features a premium dark-themed aesthetic with glassmorphism effects, multi-wallet support, and advanced auction mechanics like anti-sniping.
 
-![AuraAuction UI](public/icon.svg) <!-- Replace with a screenshot if available -->
+![AuraAuction UI](Screenshots/Screenshot%202026-02-25%20163850.png)
 
 ## ✨ Features
 
@@ -22,27 +22,22 @@ A high-end, real-time auction platform built on the **Stellar Network** using **
 
 ---
 
-## 📱 Mobile Responsive View
-AuraAuction is fully optimized for mobile devices.
-![Mobile View](https://via.placeholder.com/300x600.png?text=Mobile+Responsive+View) <!-- Please replace with your actual mobile screenshot -->
+The platform is fully optimized for all devices, ensuring a seamless experience for supercar enthusiasts on the go.
+![Mobile View](Screenshots/Screenshot%202026-02-25%20153533.png)
 
 ---
 
 ## ⚙️ CI/CD Status
-![CI/CD Pipeline](https://github.com/YourUsername/YourRepo/actions/workflows/ci-cd.yml/badge.svg)
+[![CI/CD Pipeline](https://github.com/Shrikant1a/Auction-Dapp-Yellow-Belt/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Shrikant1a/Auction-Dapp-Yellow-Belt/actions/workflows/ci-cd.yml)
 *(Automated build and linting active on every push)*
 
 ---
 
-## 🎬 Demo Video
-[**Watch the Demo Video**](https://link-to-your-video.com)
-
----
-
 ## ⛓️ Smart Contract Info
-- **Auction Contract ID**: `CC...` (Replace with your actual ID)
-- **NIPL Token Contract ID**: `CB...` (Replace with your actual ID)
-- **Inter-contract Call**: The Auction contract calls the `transfer` function of the NIPL Token contract during the `place_bid` operation.
+- **Auction Contract ID**: `CDNIYIJSTGTVOYLIKGDQQSWAYUTLJBV3JOGUURMYYS43FS2S4L5W3LX6`
+- **NIPL Token Contract ID**: `CBSR...` (Native NIPL Utility Token)
+- **Deployment Hash**: `4d1386e3e6049c3a44150f35aa69b055b19d568c48274cd7cc7f35ce26745f9e`
+- **Inter-contract Call**: The Auction contract calls the `transfer` function of the NIPL Token contract during the `place_bid` operation to handle escrow and refunds.
 - **Network**: Stellar Testnet
 
 ---
@@ -65,8 +60,8 @@ Ensure you have the following installed:
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone <your-repo-url>
-cd auction-dapp-yellow
+git clone https://github.com/Shrikant1a/Auction-Dapp-Yellow-Belt.git
+cd Auction-Dapp-Yellow-Belt
 npm install
 ```
 
