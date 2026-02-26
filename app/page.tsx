@@ -66,7 +66,7 @@ export default function Home() {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [kit, setKit] = useState<StellarWalletsKit | null>(null);
   const [walletName, setWalletName] = useState<string | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<unknown[]>([]);
   const [isSimulating, setIsSimulating] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
@@ -82,7 +82,7 @@ export default function Home() {
   });
 
   // New Auction Setup Logic
-  const handleNewAuction = (data: any) => {
+  const handleNewAuction = (data: unknown) => {
     // Switch to Demo Mode for the new listing to avoid state mismatch with the real contract
     setIsDemoMode(true);
     setHighestBid(data.startingPrice || 100);
@@ -138,7 +138,7 @@ export default function Home() {
         read: false
       }, ...prev].slice(0, 20));
 
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
 
