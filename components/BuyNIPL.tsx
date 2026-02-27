@@ -1,7 +1,44 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Coins, ArrowRight, Zap, Target } from "lucide-react";
 
-export default function BuyNIPL() {
+interface BuyNIPLProps {
+    address: string | null;
+    onSwap?: (amount: number) => Promise<void>;
+}
+
+export default function BuyNIPL({ address, onSwap }: BuyNIPLProps) {
+    const [xlmAmount, setXlmAmount] = useState<string>("");
+    const niplAmount = xlmAmount ? parseFloat(xlmAmount) * 10 : 0;
+    const [isSwapping, setIsSwapping] = useState(false);
+
+    const handleSwap = async () => {
+        if (!address) {
+            alert("Please connect your wallet first.");
+            return;
+        }
+        if (!xlmAmount || parseFloat(xlmAmount) <= 0) {
+            alert("Please enter a valid amount.");
+            return;
+        }
+
+        setIsSwapping(true);
+        try {
+            if (onSwap) {
+                await onSwap(parseFloat(xlmAmount));
+            } else {
+                // Default mock if no handler
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                alert(`Successfully swapped ${xlmAmount} XLM for ${niplAmount} NIPL!`);
+            }
+            setXlmAmount("");
+        } catch (e: any) {
+            alert(e.message || "Swap failed.");
+        } finally {
+            setIsSwapping(false);
+        }
+    };
+
     return (
         <section id="buy-nipl" className="py-20 bg-orange-primary/5 border border-orange-primary/10 rounded-[40px] p-12 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-12 opacity-10">
@@ -43,7 +80,9 @@ export default function BuyNIPL() {
                                 suppressHydrationWarning
                                 type="number"
                                 placeholder="0.00"
-                                className="bg-transparent border-none outline-none text-2xl font-bold w-full"
+                                value={xlmAmount}
+                                onChange={(e) => setXlmAmount(e.target.value)}
+                                className="bg-transparent border-none outline-none text-2xl font-bold w-full text-white"
                             />
                             <span className="font-black text-gray-500 ml-4 italic">XLM</span>
                         </div>
@@ -57,7 +96,8 @@ export default function BuyNIPL() {
                                 suppressHydrationWarning
                                 type="number"
                                 placeholder="0"
-                                className="bg-transparent border-none outline-none text-2xl font-bold w-full"
+                                value={niplAmount}
+                                className="bg-transparent border-none outline-none text-2xl font-bold w-full text-white"
                                 readOnly
                             />
                             <span className="font-black text-orange-primary ml-4 italic">NIPL</span>
@@ -66,9 +106,11 @@ export default function BuyNIPL() {
 
                     <button
                         suppressHydrationWarning
-                        className="w-full bg-orange-primary hover:bg-orange-secondary text-black py-5 rounded-3xl font-black uppercase tracking-tighter transition-all hover:scale-[1.02] shadow-[0_10px_30px_rgba(255,159,10,0.2)]"
+                        onClick={handleSwap}
+                        disabled={isSwapping || !xlmAmount}
+                        className="w-full bg-orange-primary hover:bg-orange-secondary disabled:opacity-50 disabled:cursor-not-allowed text-black py-5 rounded-3xl font-black uppercase tracking-tighter transition-all hover:scale-[1.02] shadow-[0_10px_30px_rgba(255,159,10,0.2)]"
                     >
-                        Swap Now
+                        {isSwapping ? "Processing..." : "Swap Now"}
                     </button>
                 </div>
             </div>

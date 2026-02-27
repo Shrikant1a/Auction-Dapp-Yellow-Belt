@@ -660,9 +660,47 @@ export default function Home() {
 
         <Features />
 
-        <Membership />
+        <Membership
+          address={address}
+          onSelect={async (name, price) => {
+            setTxStatus(`Upgrading to ${name} tier (${price})...`);
+            await new Promise(r => setTimeout(r, 2000));
+            setTxStatus("Transaction confirmed!");
 
-        <BuyNIPL />
+            setNotifications(prev => [{
+              id: `member-${Date.now()}`,
+              type: 'success' as const,
+              message: `Congratulations! You are now a ${name} member.`,
+              time: "Just now",
+              timestamp: Date.now(),
+              read: false
+            }, ...prev]);
+
+            setTimeout(() => setTxStatus(null), 3000);
+          }}
+        />
+        <BuyNIPL
+          address={address}
+          onSwap={async (amount) => {
+            setTxStatus(`Initiating swap: ${amount} XLM...`);
+            await new Promise(r => setTimeout(r, 1500));
+            setTxStatus("Requesting wallet signature...");
+            await new Promise(r => setTimeout(r, 1500));
+            setTxStatus("Transaction confirmed on Stellar Testnet!");
+
+            const id = `swap-${Date.now()}`;
+            setNotifications(prev => [{
+              id,
+              type: 'success' as const,
+              message: `Successfully swapped ${amount} XLM for ${amount * 10} $NIPL`,
+              time: "Just now",
+              timestamp: Date.now(),
+              read: false
+            }, ...prev]);
+
+            setTimeout(() => setTxStatus(null), 5000);
+          }}
+        />
 
         <FAQ />
 

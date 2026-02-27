@@ -23,7 +23,20 @@ const tiers = [
     }
 ];
 
-export default function Membership() {
+interface MembershipProps {
+    address?: string | null;
+    onSelect?: (tier: string, price: string) => void;
+}
+
+export default function Membership({ address, onSelect }: MembershipProps) {
+    const handleSelect = (tier: any) => {
+        if (!address) {
+            alert("Please connect your wallet first.");
+            return;
+        }
+        if (onSelect) onSelect(tier.name, tier.price);
+    };
+
     return (
         <section id="membership" className="py-20 relative">
             <div className="text-center mb-16">
@@ -56,6 +69,7 @@ export default function Membership() {
                         </ul>
                         <button
                             suppressHydrationWarning
+                            onClick={() => handleSelect(tier)}
                             className={`w-full py-4 rounded-2xl font-bold transition-all ${tier.highlight ? 'bg-orange-primary text-black hover:bg-orange-secondary' : 'bg-white/10 text-white hover:bg-white/20'}`}
                         >
                             Choose {tier.name}
