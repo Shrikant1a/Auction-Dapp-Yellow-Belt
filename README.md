@@ -29,14 +29,15 @@ The platform is fully optimized for all devices, ensuring a seamless experience 
 
 ## ⚙️ CI/CD Status
 [![CI/CD Pipeline](https://github.com/Shrikant1a/Auction-Dapp-Yellow-Belt/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Shrikant1a/Auction-Dapp-Yellow-Belt/actions/workflows/ci-cd.yml)
+![CI/CD Pipeline Screenshot](Screenshots/CICD%20PIPELINE/Screenshot%202026-02-27%20001226.png)
 *(Automated build and linting active on every push)*
 
 ---
 
 ## ⛓️ Smart Contract Info
 - **Auction Contract ID**: `CDNIYIJSTGTVOYLIKGDQQSWAYUTLJBV3JOGUURMYYS43FS2S4L5W3LX6`
-- **NIPL Token Contract ID**: `CBSR...` (Native NIPL Utility Token)
-- **Deployment Hash**: `4d1386e3e6049c3a44150f35aa69b055b19d568c48274cd7cc7f35ce26745f9e`
+- **NIPL Token Contract ID**: `CAESCEJMOCXUMAU676QCLMJXDLT7UZUS5HJQTLAJTDLAFHWNMWQBBN4V` (Native NIPL Utility Token)
+- **Deployment Hash**: `2e16d93fa271d736602afca7641aad3ae184f663292562f7b4771f2031354e3b`
 - **Inter-contract Call**: The Auction contract calls the `transfer` function of the NIPL Token contract during the `place_bid` operation to handle escrow and refunds.
 - **Network**: Stellar Testnet
 
