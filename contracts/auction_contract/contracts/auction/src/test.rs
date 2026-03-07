@@ -1,21 +1,30 @@
 #![cfg(test)]
 
 use super::*;
-use soroban_sdk::{testutils::Address as _, testutils::Ledger as _, Address, Env};
+use soroban_sdk::{testutils::Address as _, testutils::Ledger, Address, Env};
 
-fn setup_test(env: &Env) -> (Address, AuctionContractClient<'_>) {
+#[contract]
+struct DummyToken;
+
+#[contractimpl]
+impl DummyToken {
+    pub fn transfer(_env: Env, _from: Address, _to: Address, _amount: i128) {}
+}
+
+fn setup_test(env: &Env) -> (Address, Address, AuctionContractClient<'_>) {
     let owner = Address::generate(env);
+    let token = env.register(DummyToken, ());
     let contract_id = env.register(AuctionContract, ());
     let client = AuctionContractClient::new(env, &contract_id);
-    (owner, client)
+    (owner, token, client)
 }
 
 #[test]
 fn test_initialization() {
     let env = Env::default();
-    let (owner, client) = setup_test(&env);
+    let (owner, token, client) = setup_test(&env);
     
-    client.initialize(&owner, &10, &100, &3600, &300, &600);
+    client.initialize(&owner, &10, &100, &3600, &300, &600, &token);
     
     let auction = client.get_auction();
     assert_eq!(auction.highest_bid, 100);
@@ -26,8 +35,8 @@ fn test_initialization() {
 #[test]
 fn test_place_bid() {
     let env = Env::default();
-    let (owner, client) = setup_test(&env);
-    client.initialize(&owner, &10, &100, &3600, &300, &600);
+    let (owner, token, client) = setup_test(&env);
+    client.initialize(&owner, &10, &100, &3600, &300, &600, &token);
     
     let bidder = Address::generate(&env);
     env.mock_all_auths();
@@ -43,8 +52,8 @@ fn test_place_bid() {
 #[should_panic(expected = "Bid amount too low")]
 fn test_bid_too_low() {
     let env = Env::default();
-    let (owner, client) = setup_test(&env);
-    client.initialize(&owner, &10, &100, &3600, &300, &600);
+    let (owner, token, client) = setup_test(&env);
+    client.initialize(&owner, &10, &100, &3600, &300, &600, &token);
     
     let bidder = Address::generate(&env);
     env.mock_all_auths();
@@ -55,13 +64,13 @@ fn test_bid_too_low() {
 #[test]
 fn test_anti_sniping_extension() {
     let env = Env::default();
-    let (owner, client) = setup_test(&env);
+    let (owner, token, client) = setup_test(&env);
     
     let window = 300; // 5 mins
     let duration = 3600; // 1 hour init duration
     let extension = 600; // 10 mins extension
     
-    client.initialize(&owner, &10, &100, &duration, &window, &extension);
+    client.initialize(&owner, &10, &100, &duration, &window, &extension, &token);
     
     let auction_init = client.get_auction();
     let original_end = auction_init.end_time;

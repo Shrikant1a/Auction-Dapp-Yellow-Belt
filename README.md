@@ -157,6 +157,34 @@ Built with ❤️ for the Stellar Ecosystem.
 
 ---
 
+
+---
+
+## 🧪 Test Cases
+
+AuraAuction has been rigorously tested across both its smart contract logic and frontend interface.
+
+### 1. Soroban Smart Contract Tests
+The core auction logic is verified using Rust unit tests.
+- **Initialization**: Ensures auction parameters are correctly set.
+- **Bidding Logic**: Validates bid increments and highest bidder updates.
+- **Validation**: Ensures bids below the minimum increment are rejected.
+- **Anti-Sniping**: Verifies that the auction duration extends correctly when bids are placed near the deadline.
+
+![Smart Contract Tests](Screenshots/TEST_CASES/Soroban_Contract_Tests.png)
+
+### 2. Frontend UI Workflow
+Visual verification of the user journey and DApp functionality.
+
+| Test Case | Description | Visual Evidence |
+|-----------|-------------|-----------------|
+| **Initial Load** | Verifies the premium landing page and "Connect Wallet" accessibility. | ![Initial Load](Screenshots/TEST_CASES/1_Initial_Load.png) |
+| **Wallet Selection** | Ensures the Stellar Wallets Kit modal triggers correctly. | ![Wallet Selection](Screenshots/TEST_CASES/2_Wallet_Selection.png) |
+| **Token Swap ($NIPL)** | Validates the utility token swap interface and input logic. | ![Placing Bid](Screenshots/TEST_CASES/3_Placing_Bid.png) |
+| **Membership & Features** | Confirms the visibility of tiered access and premium features. | ![Features](Screenshots/TEST_CASES/4_Features_Overview.png) |
+
+---
+
 ## 🚀 How to Deploy to Vercel (Live Demo)
 
 To host your DApp online for others to use, follow these steps:
