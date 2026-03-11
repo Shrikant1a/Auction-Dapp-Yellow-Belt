@@ -11,9 +11,10 @@ interface NavbarProps {
     onCartClick: () => void;
     onNotificationClick: () => void;
     hasUnread: boolean;
+    niplBalance?: number;
 }
 
-export default function Navbar({ address, setAddress, setKit, setWalletName, onCartClick, onNotificationClick, hasUnread }: NavbarProps) {
+export default function Navbar({ address, setAddress, setKit, setWalletName, onCartClick, onNotificationClick, hasUnread, niplBalance }: NavbarProps) {
     const navLinks = [
         { name: "Dashboard", id: "live-auctions", active: true },
         { name: "Catalog", id: "search-section", active: false },
@@ -88,22 +89,28 @@ export default function Navbar({ address, setAddress, setKit, setWalletName, onC
                 </div>
 
                 {address ? (
-                    <button
-                        suppressHydrationWarning
-                        onClick={() => {
-                            setAddress(null);
-                            setKit(null);
-                            setWalletName(null);
-                        }}
-                        className="bg-orange-primary/10 border border-orange-primary/20 px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-orange-primary/20 transition-all group"
-                        title="Click to Disconnect"
-                    >
-                        <div className="w-2 h-2 bg-orange-primary rounded-full animate-pulse" />
-                        <span className="text-xs font-bold text-orange-primary">
-                            {address.slice(0, 4)}...{address.slice(-4)}
-                        </span>
-                        <span className="text-[10px] text-orange-primary/50 font-bold uppercase ml-2 hidden group-hover:inline">Disconnect</span>
-                    </button>
+                    <div className="flex items-center space-x-3">
+                        <div className="hidden sm:flex bg-white/5 border border-white/10 px-4 py-2 rounded-full items-center space-x-2">
+                            <span className="text-[9px] font-black uppercase text-gray-500 tracking-wider">Balance</span>
+                            <span className="text-xs font-black text-orange-primary">{niplBalance?.toLocaleString()} NIPL</span>
+                        </div>
+                        <button
+                            suppressHydrationWarning
+                            onClick={() => {
+                                setAddress(null);
+                                setKit(null);
+                                setWalletName(null);
+                            }}
+                            className="bg-orange-primary/10 border border-orange-primary/20 px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-orange-primary/20 transition-all group"
+                            title="Click to Disconnect"
+                        >
+                            <div className="w-2 h-2 bg-orange-primary rounded-full animate-pulse" />
+                            <span className="text-xs font-bold text-orange-primary">
+                                {address.slice(0, 4)}...{address.slice(-4)}
+                            </span>
+                            <span className="text-[10px] text-orange-primary/50 font-bold uppercase ml-2 hidden group-hover:inline">Disconnect</span>
+                        </button>
+                    </div>
                 ) : (
                     <WalletConnect
                         setAddress={setAddress}

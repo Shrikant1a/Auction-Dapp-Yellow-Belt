@@ -19,7 +19,7 @@ import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 
 import { xdr, scValToNative } from "@stellar/stellar-sdk";
-import { placeBidOnChain, getRecentEvents, getAuctionState } from "@/app/lib/stellar";
+import { placeBidOnChain, getRecentEvents, getAuctionState, getNIPLBalance, finalizeAuctionOnChain } from "@/app/lib/stellar";
 
 import CreateAuctionModal from "@/components/CreateAuctionModal";
 import UserActivityModal from "@/components/UserActivityModal";
@@ -60,6 +60,10 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(86400); // Default to 24h
   const [highestBid, setHighestBid] = useState(100); // Default to starting price
   const [isEnded, setIsEnded] = useState(false);
+  const [minIncrement, setMinIncrement] = useState(10);
+  const [auctionOwner, setAuctionOwner] = useState<string | null>(null);
+  const [userNiplBalance, setUserNiplBalance] = useState<number>(0);
+  const [isFinalized, setIsFinalized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [txStatus, setTxStatus] = useState<string | null>(null);
@@ -213,6 +217,10 @@ export default function Home() {
         if (state) {
           console.log("Contract Sync Success:", state);
           setHighestBid(Number(state.highest_bid));
+          setMinIncrement(Number(state.min_increment) || 10);
+          setAuctionOwner(state.owner);
+          setIsFinalized(state.finalized);
+
           const end = Number(state.end_time);
           const now = Math.floor(Date.now() / 1000);
           if (end > now) {
@@ -236,6 +244,19 @@ export default function Home() {
       }
     };
     fetchState();
+  }, [address, isDemoMode]);
+
+  // FETCH NIPL BALANCE
+  useEffect(() => {
+    if (address && !isDemoMode) {
+      const fetchBalance = async () => {
+        const balance = await getNIPLBalance(address);
+        setUserNiplBalance(Number(balance));
+      };
+      fetchBalance();
+      const interval = setInterval(fetchBalance, 10000);
+      return () => clearInterval(interval);
+    }
   }, [address, isDemoMode]);
 
   // REAL-TIME EVENT INTEGRATION
@@ -398,8 +419,8 @@ export default function Home() {
     }
 
     const amount = parseInt(bidAmount);
-    if (!amount || amount < highestBid + 10) {
-      setError(`Invalid Bid: Minimum bid is ${highestBid + 10} XLM`);
+    if (!amount || amount < highestBid + minIncrement) {
+      setError(`Invalid Bid: Minimum bid is ${highestBid + minIncrement} XLM`);
       return;
     }
 
@@ -489,6 +510,25 @@ export default function Home() {
     }
   };
 
+  const handleFinalize = async () => {
+    if (!address || !kit) return;
+    setIsLoading(true);
+    setTxStatus("Requesting Signature for Finalization...");
+    try {
+      await finalizeAuctionOnChain(address, async (xdr) => {
+        const { signedTxXdr } = await kit.signTransaction(xdr);
+        return signedTxXdr;
+      });
+      setTxStatus("Auction Finalized Successfully!");
+      setIsFinalized(true);
+      setTimeout(() => setTxStatus(null), 5000);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     (window as typeof window & { openCreateAuction?: () => void }).openCreateAuction = () => setIsCreateModalOpen(true);
     return () => { delete (window as typeof window & { openCreateAuction?: () => void }).openCreateAuction; };
@@ -513,6 +553,7 @@ export default function Home() {
           onCartClick={() => setIsActivityModalOpen(true)}
           onNotificationClick={() => setIsNotificationModalOpen(true)}
           hasUnread={notifications.some(n => !n.read)}
+          niplBalance={userNiplBalance}
         />
 
         <Hero />
@@ -730,6 +771,9 @@ export default function Home() {
                 onBid={handleBid}
                 formatTime={formatTime}
                 winner={history[0]?.bidder === address ? "YOU" : history[0]?.bidder}
+                isOwner={address === auctionOwner}
+                isFinalized={isFinalized}
+                onFinalize={handleFinalize}
               />
 
               <BidHistory

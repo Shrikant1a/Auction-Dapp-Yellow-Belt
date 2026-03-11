@@ -4,6 +4,7 @@ export const RPC_URL = 'https://soroban-testnet.stellar.org';
 export const NETWORK_PASSPHRASE = Networks.TESTNET;
 export const HORIZON_URL = 'https://horizon-testnet.stellar.org';
 export const AUCTION_CONTRACT_ID = 'CDNIYIJSTGTVOYLIKGDQQSWAYUTLJBV3JOGUURMYYS43FS2S4L5W3LX6';
+export const NIPL_TOKEN_ID = 'CAESCEJMOCXUMAU676QCLMJXDLT7UZUS5HJQTLAJTDLAFHWNMWQBBN4V';
 
 export const server = new Horizon.Server(HORIZON_URL);
 export const rpcServer = new rpc.Server(RPC_URL);
@@ -95,6 +96,56 @@ export async function getRecentEvents(startLedger?: number) {
     console.error("Error fetching events:", e);
     return [];
   }
+}
+
+// Token connection helper
+export async function getNIPLBalance(userAddress: string) {
+  const contract = new Contract(NIPL_TOKEN_ID);
+  try {
+    const tx = new TransactionBuilder(
+      new Account(userAddress, "0"),
+      { fee: "100", networkPassphrase: NETWORK_PASSPHRASE }
+    )
+      .addOperation(contract.call("balance", nativeToScVal(userAddress, { type: 'address' })))
+      .setTimeout(30)
+      .build();
+
+    const simulation = await rpcServer.simulateTransaction(tx);
+    if (rpc.Api.isSimulationSuccess(simulation) && simulation.result) {
+      return scValToNative(simulation.result.retval);
+    }
+  } catch (e) {
+    console.error("Error fetching NIPL balance:", e);
+  }
+  return 0;
+}
+
+// Finalize helper
+export async function finalizeAuctionOnChain(userAddress: string, signFn: (xdr: string) => Promise<string>) {
+  const contract = new Contract(AUCTION_CONTRACT_ID);
+  const sourceAccount = await server.loadAccount(userAddress);
+  const tx = new TransactionBuilder(sourceAccount, {
+    fee: '10000',
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(contract.call('finalize'))
+    .setTimeout(30)
+    .build();
+
+  const simulation = await rpcServer.simulateTransaction(tx);
+  if (rpc.Api.isSimulationError(simulation)) {
+    throw new Error(`Simulation failed: ${simulation.error}`);
+  }
+
+  const preparedTx = rpc.assembleTransaction(tx, simulation).build();
+  const signedXDR = await signFn(preparedTx.toXDR());
+  const response = await rpcServer.sendTransaction(TransactionBuilder.fromXDR(signedXDR, NETWORK_PASSPHRASE));
+
+  if (response.status === 'ERROR') {
+    throw new Error(`Transaction failed: ${JSON.stringify(response.errorResult)}`);
+  }
+
+  return response.hash;
 }
 
 

@@ -11,6 +11,9 @@ interface BidControlsProps {
     onBid: () => void;
     formatTime: (seconds: number) => string;
     winner?: string;
+    isOwner?: boolean;
+    isFinalized?: boolean;
+    onFinalize?: () => void;
 }
 
 export default function BidControls({
@@ -22,7 +25,10 @@ export default function BidControls({
     setBidAmount,
     onBid,
     formatTime,
-    winner
+    winner,
+    isOwner,
+    isFinalized,
+    onFinalize
 }: BidControlsProps) {
     return (
         <section className="lg:col-span-5 space-y-8">
@@ -122,9 +128,21 @@ export default function BidControls({
                         <div className="space-y-4">
                             <div className="bg-orange-primary/10 border border-orange-primary/20 p-6 rounded-2xl text-center">
                                 <Award className="mx-auto text-orange-primary mb-3" size={32} />
-                                <h4 className="font-black text-orange-primary text-xl uppercase tracking-tighter">Auction Concluded</h4>
+                                <h4 className="font-black text-orange-primary text-xl uppercase tracking-tighter">
+                                    {isFinalized ? "Auction Finalized" : "Auction Concluded"}
+                                </h4>
                                 <p className="text-white/60 text-sm mt-1">Winner: {winner}</p>
                             </div>
+
+                            {isOwner && !isFinalized && (
+                                <button
+                                    onClick={onFinalize}
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-black uppercase tracking-widest transition-all shadow-[0_10px_30px_rgba(22,163,74,0.2)]"
+                                >
+                                    Finalize Auction On-Chain
+                                </button>
+                            )}
+
                             <button
                                 suppressHydrationWarning
                                 onClick={() => (window as typeof window & { openCreateAuction?: () => void }).openCreateAuction?.()}
